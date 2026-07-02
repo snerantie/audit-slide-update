@@ -10,7 +10,10 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION
+from pptx.enum.chart import (
+    XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION, XL_MARKER_STYLE,
+)
+from lxml import etree
 
 
 # --- Brand palette ---------------------------------------------------------
@@ -137,14 +140,44 @@ def add_callout(slide, x, y, w, h, *, title, body, accent):
              text=body, size=10, color=INK_2)
 
 
+_LEGEND_POS_MAP = {
+    XL_LEGEND_POSITION.BOTTOM: "b",
+    XL_LEGEND_POSITION.TOP: "t",
+    XL_LEGEND_POSITION.LEFT: "l",
+    XL_LEGEND_POSITION.RIGHT: "r",
+    XL_LEGEND_POSITION.CORNER: "tr",
+}
+_C_NS = "http://schemas.openxmlformats.org/drawingml/2006/chart"
+
+
+def _force_legend_pos(chart, pos):
+    """Guarantee <c:legendPos val="..."/> is present with a valid value.
+
+    Works around a python-pptx quirk where setting `chart.legend.position`
+    combined with `include_in_layout=False` can emit `<c:legendPos/>` with
+    no `val` attribute, which Microsoft PowerPoint rejects.
+    """
+    legend_el = chart.legend._element  # <c:legend>
+    lp_els = legend_el.findall(f"{{{_C_NS}}}legendPos")
+    val = _LEGEND_POS_MAP.get(pos, "b")
+    if lp_els:
+        for el in lp_els:
+            el.set("val", val)
+    else:
+        lp = etree.SubElement(legend_el, f"{{{_C_NS}}}legendPos")
+        lp.set("val", val)
+        # legendPos must be the first child of <c:legend>
+        legend_el.insert(0, lp)
+
+
 def style_chart(chart, *, has_legend=True, legend_pos=XL_LEGEND_POSITION.BOTTOM):
     chart.has_title = False
     if has_legend:
         chart.has_legend = True
         chart.legend.position = legend_pos
-        chart.legend.include_in_layout = False
         chart.legend.font.size = Pt(9)
         chart.legend.font.name = "Calibri"
+        _force_legend_pos(chart, legend_pos)
     else:
         chart.has_legend = False
 
@@ -276,20 +309,18 @@ def build():
     open_series = series_list[0]
     open_series.format.line.color.rgb = VF_RED
     open_series.format.line.width = Pt(2.5)
-    open_series.marker.style = 8  # circle
+    open_series.marker.style = XL_MARKER_STYLE.CIRCLE
     open_series.marker.size = 7
     open_series.marker.format.fill.solid()
     open_series.marker.format.fill.fore_color.rgb = VF_RED
-    open_series.marker.format.line.color.rgb = VF_RED
 
     closed_series = series_list[1]
     closed_series.format.line.color.rgb = GOOD
     closed_series.format.line.width = Pt(2.5)
-    closed_series.marker.style = 8
+    closed_series.marker.style = XL_MARKER_STYLE.CIRCLE
     closed_series.marker.size = 7
     closed_series.marker.format.fill.solid()
     closed_series.marker.format.fill.fore_color.rgb = GOOD
-    closed_series.marker.format.line.color.rgb = GOOD
 
     # --- 2) Doughnut chart ---
     donut_data = CategoryChartData()
@@ -310,16 +341,17 @@ def build():
         panel_w - Inches(0.3), chart_h, donut_data
     )
     donut_chart = donut_shape.chart
-    style_chart(donut_chart, legend_pos=XL_LEGEND_POSITION.RIGHT)
-    # Color each slice
+    # Use BOTTOM legend for reliability across PowerPoint versions
+    style_chart(donut_chart, legend_pos=XL_LEGEND_POSITION.BOTTOM)
+    # Data labels — show slice values (no custom font color for max compat)
     plot = donut_chart.plots[0]
     plot.has_data_labels = True
     dl = plot.data_labels
     dl.font.size = Pt(9)
     dl.font.bold = True
-    dl.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
     dl.show_value = True
 
+    # Color each slice
     series0 = list(donut_chart.series)[0]
     for idx, pt in enumerate(series0.points):
         pt.format.fill.solid()
