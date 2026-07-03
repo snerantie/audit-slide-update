@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VFS | Audit Remediations — Executive View</title>
+  <meta name="viewport" content="width=1600, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --vf-red: #E60000;
+      --vf-red-dark: #B30000;
+      --ink: #0B1F3A;
+      --ink-2: #33475B;
+      --muted: #6B7A8F;
+      --bg: #F5F7FB;
+      --card: #FFFFFF;
+      --line: #E6EAF0;
+      --good: #16A34A;
+      --amber: #F59E0B;
+      --shadow: 0 8px 24px rgba(11,31,58,.08);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: "Segoe UI", Inter, system-ui, -apple-system, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    /* 16:9 slide canvas */
+    .slide {
+      width: 1600px;
+      height: 900px;
+      margin: 24px auto;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 100%);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 40px 48px 32px 48px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--vf-red) 0%, var(--vf-red-dark) 100%);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+    }
+    .title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -.3px;
+    }
+    .title .brand { color: var(--vf-red); }
+    .title .sep { color: var(--muted); margin: 0 10px; font-weight: 400; }
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* KPI Row */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(11,31,58,.04);
+    }
+    .kpi .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .kpi .value {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.05;
+      margin-top: 6px;
+    }
+    .kpi .unit { font-size: 22px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+    .kpi .foot {
+      font-size: 12px;
+      color: var(--ink-2);
+      margin-top: 6px;
+    }
+    .kpi.accent { border-top: 4px solid var(--vf-red); }
+    .kpi.good { border-top: 4px solid var(--good); }
+    .kpi.info { border-top: 4px solid #2563EB; }
+    .kpi.amber { border-top: 4px solid var(--amber); }
+    .kpi.dark { border-top: 4px solid var(--ink); }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(22,163,74,.12);
+      color: var(--good);
+      font-weight: 700;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Body grid: two chart panels */
+    .body {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 18px;
+      min-height: 0;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px 12px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      box-shadow: 0 2px 6px rgba(11,31,58,.04);
+    }
+    .panel h3 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .panel .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .chart-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Footer / highlights */
+    .footer {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .hi {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--vf-red);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .hi .h {
+      font-size: 12px;
+      color: var(--vf-red);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .hi .p {
+      font-size: 13px;
+      color: var(--ink-2);
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+    .hi.blue { border-left-color: #2563EB; }
+    .hi.blue .h { color: #2563EB; }
+    .hi.green { border-left-color: var(--good); }
+    .hi.green .h { color: var(--good); }
+    .hi.amber { border-left-color: var(--amber); }
+    .hi.amber .h { color: #B45309; }
+
+    /* Center donut label */
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .donut-center .n {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .donut-center .l {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-top: 4px;
+    }
+
+    /* Print / export */
+    @media print {
+      body { background: white; }
+      .slide { box-shadow: none; margin: 0; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <section class="slide" id="slide">
+    <!-- Header -->
+    <div class="header">
+      <div class="title">
+        <span class="brand">VFS</span><span class="sep">|</span>Audit Remediations
+      </div>
+      <div class="subtitle">FY26 Close-out &amp; FY27 Outlook &middot; Executive Summary</div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpis">
+      <div class="kpi good">
+        <div class="label">Completion Rate</div>
+        <div class="value">100<span class="unit">%</span></div>
+        <div class="foot">FY26 formally closed <span class="badge">On track</span></div>
+      </div>
+      <div class="kpi accent">
+        <div class="label">Total Remediations Closed</div>
+        <div class="value">25</div>
+        <div class="foot">18 FY26 &nbsp;+&nbsp; 7 FY27 Q1</div>
+      </div>
+      <div class="kpi dark">
+        <div class="label">Open Items</div>
+        <div class="value">0</div>
+        <div class="foot">No items carried forward</div>
+      </div>
+      <div class="kpi info">
+        <div class="label">FY26 Audits Delivered</div>
+        <div class="value">7</div>
+        <div class="foot">1 FY26 audit still in progress</div>
+      </div>
+      <div class="kpi amber">
+        <div class="label">FY27 Q1 Audits Planned</div>
+        <div class="value">4</div>
+        <div class="foot">1 currently in progress</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <!-- Panel 1: Burndown -->
+      <div class="panel">
+        <h3>Remediation Burndown</h3>
+        <div class="hint">Open vs. Closed items across FY26 &rarr; FY27 Q1</div>
+        <div class="chart-wrap">
+          <canvas id="burndown"></canvas>
+        </div>
+      </div>
+
+      <!-- Panel 2: Donut by Parent Audit -->
+      <div class="panel">
+        <h3>Closed Remediations by Parent Audit</h3>
+        <div class="hint">25 items across 8 audit streams</div>
+        <div class="chart-wrap">
+          <canvas id="donut"></canvas>
+          <div class="donut-center">
+            <div class="n">25</div>
+            <div class="l">Closed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 3: FY26 vs FY27 bar -->
+      <div class="panel">
+        <h3>FY26 vs FY27 Q1 Delivery</h3>
+        <div class="hint">Planned vs. completed remediation actions</div>
+        <div class="chart-wrap">
+          <canvas id="bars"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer highlights -->
+    <div class="footer">
+      <div class="hi green">
+        <div class="h">FY26 Closed</div>
+        <div class="p">All 18 remediation actions delivered — 100% completion, zero carry-forward items.</div>
+      </div>
+      <div class="hi blue">
+        <div class="h">FY26 In Progress</div>
+        <div class="p">One FY26 audit remains in progress; findings will be reported on completion.</div>
+      </div>
+      <div class="hi amber">
+        <div class="h">FY27 Programme</div>
+        <div class="p">Four FY27 Q1 audits planned; one active. Remediations to be tracked under FY27 programme.</div>
+      </div>
+      <div class="hi">
+        <div class="h">Capacity Note</div>
+        <div class="p">Committed management actions factored into PI capacity and delivered within PI quarters.</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Shared styling
+    Chart.defaults.font.family = '"Segoe UI", Inter, system-ui, sans-serif';
+    Chart.defaults.color = '#33475B';
+    Chart.defaults.borderColor = '#E6EAF0';
+
+    // --- Burndown ---
+    const burndownCtx = document.getElementById('burndown').getContext('2d');
+    const openGrad = burndownCtx.createLinearGradient(0, 0, 0, 340);
+    openGrad.addColorStop(0, 'rgba(230,0,0,.28)');
+    openGrad.addColorStop(1, 'rgba(230,0,0,0)');
+
+    new Chart(burndownCtx, {
+      type: 'line',
+      data: {
+        labels: ['FY26 Q1', 'FY26 Q2', 'FY26 Q3', 'FY26 Q4', 'FY27 Q1'],
+        datasets: [
+          {
+            label: 'Open',
+            data: [18, 10, 6, 3, 7],
+            borderColor: '#E60000',
+            backgroundColor: openGrad,
+            borderWidth: 3,
+            tension: .35,
+            fill: true,
+            pointBackgroundColor: '#E60000',
+            pointRadius: 5,
+            pointHoverRadius: 6,
+          },
+          {
+            label: 'Closed (cumulative)',
+            data: [0, 8, 14, 17, 25],
+            borderColor: '#16A34A',
+            backgroundColor: 'rgba(22,163,74,.10)',
+            borderWidth: 3,
+            tension: .35,
+            fill: false,
+            pointBackgroundColor: '#16A34A',
+            pointRadius: 5,
+            pointHoverRadius: 6,
+            borderDash: [6, 4],
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true } },
+          tooltip: { intersect: false, mode: 'index' }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 5 }, grid: { color: '#EEF1F6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // --- Donut ---
+    const donutCtx = document.getElementById('donut').getContext('2d');
+    new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'FY26 Vodacom Insurance',
+          'FY26 Vodacom Life Assurance',
+          'FY26 Consumer Lending — Airtime Advance',
+          'FY25 Vodacom Insurance (VIC)',
+          'FY25 Data Protection – Code Repos',
+          'FY25 DevSecOps',
+          'FY25 Ransomware Recovery',
+          'FY25 Vodapay Products'
+        ],
+        datasets: [{
+          data: [7, 6, 3, 3, 2, 2, 1, 1],
+          backgroundColor: [
+            '#E60000',
+            '#B30000',
+            '#F59E0B',
+            '#2563EB',
+            '#0EA5E9',
+            '#7C3AED',
+            '#16A34A',
+            '#64748B'
+          ],
+          borderColor: '#FFFFFF',
+          borderWidth: 3,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              boxWidth: 10,
+              boxHeight: 10,
+              usePointStyle: true,
+              font: { size: 11 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / 25 * 100)}%)`
+            }
+          }
+        }
+      }
+    });
+
+    // --- Grouped Bars: FY26 vs FY27 Q1 ---
+    const barsCtx = document.getElementById('bars').getContext('2d');
+    new Chart(barsCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Audits', 'Remediations', 'Completed', 'Open'],
+        datasets: [
+          {
+            label: 'FY26',
+            data: [7, 18, 18, 0],
+            backgroundColor: '#E60000',
+            borderRadius: 6,
+            barPercentage: .65,
+            categoryPercentage: .7
+          },
+          {
+            label: 'FY27 Q1',
+            data: [4, 7, 7, 0],
+            backgroundColor: '#2563EB',
+            borderRadius: 6,
+            barPercentage: .65,
+            categoryPercentage: .7
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true } },
+          tooltip: { intersect: false, mode: 'index' }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#EEF1F6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
