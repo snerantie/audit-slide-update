@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cross-Forum Correlation · Technology Management Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+  <style>
+    /* Story visualization */
+    .story-svg { width: 100%; height: auto; }
+    .item-card { transition: transform 0.15s ease, filter 0.15s ease; cursor: pointer; }
+    .item-card:hover { transform: translateY(-2px); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08)); }
+    .story-edge { transition: stroke-width 0.15s ease, opacity 0.15s ease; }
+    .story-edge:hover { stroke-width: 4; opacity: 1; }
+
+    /* Highlight pulse for the demo */
+    @keyframes edge-flow {
+      0%   { stroke-dashoffset: 30; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .edge-flow { stroke-dasharray: 6 4; animation: edge-flow 1.5s linear infinite; }
+
+    /* Impact stat */
+    .impact-stat { border-radius: 8px; padding: 8px 10px; background: white; border: 1px solid var(--tt-border); }
+  </style>
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="max-w-[1400px] mx-auto px-6 py-6" x-data="correlation()" x-init="init()">
+
+    <!-- Header -->
+    <div class="mb-5">
+      <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Correlation Agent</div>
+      <h1 class="text-2xl font-bold text-slate-900 mt-0.5">Cross-Forum Correlation</h1>
+      <p class="text-sm text-slate-600 mt-1 max-w-3xl">
+        The Correlation Agent traverses the Neptune knowledge graph across every meeting, email, chat and document — surfacing patterns no human could catch at pace. Below: two stories from the last six days, plus everything else the Tower is watching.
+      </p>
+    </div>
+
+    <!-- Introduction / stats banner -->
+    <div class="tt-card p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="impact-stat">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Forums watched</div>
+        <div class="text-xl font-bold tt-num-mono text-slate-900">5</div>
+        <div class="text-[10px] text-slate-500">SteerCo · Risk · Cyber · Service · ARB</div>
+      </div>
+      <div class="impact-stat">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Cross-forum themes</div>
+        <div class="text-xl font-bold tt-num-mono text-teal-700">6</div>
+        <div class="text-[10px] text-slate-500">Detected in last 30 days</div>
+      </div>
+      <div class="impact-stat">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Silent risks surfaced</div>
+        <div class="text-xl font-bold tt-num-mono text-red-700">2</div>
+        <div class="text-[10px] text-slate-500">Raised in minutes but not in GRC</div>
+      </div>
+      <div class="impact-stat">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Ownership gaps closed</div>
+        <div class="text-xl font-bold tt-num-mono text-green-700">3</div>
+        <div class="text-[10px] text-slate-500">Was 3 last week; all now assigned</div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         HERO STORY — The PaymentGate Story
+         ============================================================ -->
+    <section class="tt-card p-5 mb-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-red flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span> CRITICAL
+            </span>
+            <span class="tt-pill tt-pill-teal">HERO CORRELATION</span>
+            <span class="tt-pill tt-pill-grey">Detected 06:58 today</span>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900">The PaymentGate Story</h2>
+          <p class="text-sm text-slate-600 mt-1 max-w-3xl">
+            Same underlying issue — vendor-side reliability of the PaymentGate merchant gateway — discussed in <strong>4 governance forums</strong> across <strong>6 days</strong>, each in a different vocabulary, with no single accountable owner until the Tower stitched it together and drafted a SteerCo decision paper.
+          </p>
+        </div>
+        <div class="flex flex-col gap-1 items-end text-xs">
+          <div class="text-slate-500">Value at stake</div>
+          <div class="font-bold text-red-700 text-lg tt-num-mono">£180M / yr</div>
+          <div class="text-slate-500">Concentration on this vendor</div>
+        </div>
+      </div>
+
+      <!-- The timeline SVG -->
+      <div class="bg-slate-50 rounded-lg p-3">
+        <svg viewBox="0 0 1120 470" class="story-svg" preserveAspectRatio="xMidYMid meet">
+
+          <!-- Definitions -->
+          <defs>
+            <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+            </marker>
+            <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#0F766E"/>
+            </marker>
+            <marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#F0A202"/>
+            </marker>
+          </defs>
+
+          <!-- Timeline line + dots -->
+          <line x1="120" y1="55" x2="1000" y2="55" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="4,4"/>
+          <circle cx="120" cy="55" r="9" fill="#DC2626" stroke="white" stroke-width="3"/>
+          <circle cx="400" cy="55" r="9" fill="#F59E0B" stroke="white" stroke-width="3"/>
+          <circle cx="680" cy="55" r="9" fill="#F59E0B" stroke="white" stroke-width="3"/>
+          <circle cx="960" cy="55" r="9" fill="#DC2626" stroke="white" stroke-width="3"/>
+
+          <!-- Forum labels -->
+          <text x="120" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">CYBER MANCO</text>
+          <text x="120" y="41" text-anchor="middle" font-size="10" fill="#64748B">Wed 8 Jul · 14:00</text>
+          <text x="400" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">RISK MANCO</text>
+          <text x="400" y="41" text-anchor="middle" font-size="10" fill="#64748B">Fri 10 Jul · 09:30</text>
+          <text x="680" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">SERVICE MANCO</text>
+          <text x="680" y="41" text-anchor="middle" font-size="10" fill="#64748B">Sat 11 Jul · 11:00</text>
+          <text x="960" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">STEERCO</text>
+          <text x="960" y="41" text-anchor="middle" font-size="10" fill="#64748B">Tue 14 Jul · 15:00</text>
+
+          <!-- ============ EDGES (drawn before nodes so nodes overlay them) ============ -->
+          <!-- Cyber R-041 → Risk R-041 ratified -->
+          <path d="M 210,110 C 270,110 320,110 340,110" fill="none" stroke="#DC2626" stroke-width="2.5" opacity="0.75" marker-end="url(#arrow-red)"/>
+          <text x="275" y="105" font-size="9" fill="#DC2626" font-weight="600">escalates</text>
+
+          <!-- Risk R-041 → SteerCo D-STE-2 (main escalation path — highlighted) -->
+          <path d="M 490,110 C 600,110 800,145 900,180" fill="none" stroke="#DC2626" stroke-width="3" opacity="0.85" marker-end="url(#arrow-red)" class="edge-flow"/>
+
+          <!-- Cyber A-1 exit clause → SteerCo STE-A1 formal contract review -->
+          <path d="M 210,190 C 320,190 700,215 900,260" fill="none" stroke="#0F766E" stroke-width="2" opacity="0.6" marker-end="url(#arrow-teal)"/>
+
+          <!-- Cyber A-3 SteerCo escalation → SteerCo D-STE-2 -->
+          <path d="M 210,340 C 320,340 720,220 900,190" fill="none" stroke="#0F766E" stroke-width="1.5" opacity="0.55" marker-end="url(#arrow-teal)" stroke-dasharray="4,3"/>
+          <text x="620" y="255" font-size="9" fill="#64748B" font-weight="600">delivers to</text>
+
+          <!-- Cyber R-041 → Service SVC-A1 (root cause link) -->
+          <path d="M 210,110 C 300,110 500,170 620,195" fill="none" stroke="#DC2626" stroke-width="1.5" opacity="0.5" stroke-dasharray="4,3"/>
+          <text x="450" y="135" font-size="9" fill="#DC2626" font-weight="600">root cause</text>
+
+          <!-- Service SVC-A1 → SteerCo D-STE-2 -->
+          <path d="M 770,205 C 830,205 870,195 900,190" fill="none" stroke="#DC2626" stroke-width="2" opacity="0.7" marker-end="url(#arrow-red)"/>
+          <text x="800" y="185" font-size="9" fill="#DC2626" font-weight="600">confirms</text>
+
+          <!-- Risk R-NEW-3 → Risk RSK-A1 -->
+          <path d="M 400,165 C 400,195 400,220 400,250" fill="none" stroke="#DC2626" stroke-width="1.5" opacity="0.6" marker-end="url(#arrow-red)"/>
+
+          <!-- Risk RSK-A1 → SteerCo STE-A8 -->
+          <path d="M 490,275 C 600,275 800,315 900,330" fill="none" stroke="#0F766E" stroke-width="2" opacity="0.65" marker-end="url(#arrow-teal)"/>
+          <text x="640" y="308" font-size="9" fill="#0F766E" font-weight="600">reports to</text>
+
+          <!-- Cyber R-041 → Service SVC-A3 (motivates) -->
+          <path d="M 210,110 C 340,110 550,270 620,290" fill="none" stroke="#DC2626" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+
+          <!-- ============ NODES — Cyber MANCO column (x=30) ============ -->
+          <!-- R-041 uplift -->
+          <g class="item-card">
+            <rect x="30" y="80" width="180" height="60" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.5"/>
+            <text x="42" y="98" font-size="10" font-weight="700" fill="#B91C1C">R-041 · RISK</text>
+            <text x="42" y="115" font-size="11" font-weight="600" fill="#0F172A">PaymentGate SLA</text>
+            <text x="42" y="130" font-size="10" fill="#64748B">High → Critical (uplift)</text>
+          </g>
+          <!-- A-1 -->
+          <g class="item-card">
+            <rect x="30" y="160" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="42" y="178" font-size="10" font-weight="700" fill="#0F766E">GOV-378 · ACTION</text>
+            <text x="42" y="195" font-size="11" font-weight="600" fill="#0F172A">Exit-clause review</text>
+            <text x="42" y="210" font-size="10" fill="#64748B">Priya Deshmukh · 22 Jul</text>
+          </g>
+          <!-- A-2 -->
+          <g class="item-card">
+            <rect x="30" y="240" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="42" y="258" font-size="10" font-weight="700" fill="#0F766E">GOV-379 · ACTION</text>
+            <text x="42" y="275" font-size="11" font-weight="600" fill="#0F172A">Post-incident report</text>
+            <text x="42" y="290" font-size="10" fill="#64748B">James Kellner · 15 Jul ✓</text>
+          </g>
+          <!-- A-3 -->
+          <g class="item-card">
+            <rect x="30" y="320" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="42" y="338" font-size="10" font-weight="700" fill="#0F766E">GOV-381 · ACTION</text>
+            <text x="42" y="355" font-size="11" font-weight="600" fill="#0F172A">SteerCo escalation</text>
+            <text x="42" y="370" font-size="10" fill="#64748B">Sarah Whitmore · 14 Jul ✓</text>
+          </g>
+
+          <!-- ============ NODES — Risk MANCO column (x=310) ============ -->
+          <g class="item-card">
+            <rect x="310" y="80" width="180" height="60" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.5"/>
+            <text x="322" y="98" font-size="10" font-weight="700" fill="#B91C1C">R-041 · RATIFIED</text>
+            <text x="322" y="115" font-size="11" font-weight="600" fill="#0F172A">Endorsed for SteerCo</text>
+            <text x="322" y="130" font-size="10" fill="#64748B">Marcus Bell · in-meeting</text>
+          </g>
+          <g class="item-card">
+            <rect x="310" y="145" width="180" height="60" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.5"/>
+            <text x="322" y="163" font-size="10" font-weight="700" fill="#B91C1C">R-NEW-3 · NEW RISK</text>
+            <text x="322" y="180" font-size="11" font-weight="600" fill="#0F172A">3rd-party concentration</text>
+            <text x="322" y="195" font-size="10" fill="#64748B">Critical (new emerging)</text>
+          </g>
+          <g class="item-card">
+            <rect x="310" y="245" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="322" y="263" font-size="10" font-weight="700" fill="#0F766E">RSK-201 · ACTION</text>
+            <text x="322" y="280" font-size="11" font-weight="600" fill="#0F172A">Treatment plan</text>
+            <text x="322" y="295" font-size="10" fill="#64748B">Marcus Bell · 31 Jul</text>
+          </g>
+
+          <!-- ============ NODES — Service MANCO column (x=590) ============ -->
+          <g class="item-card">
+            <rect x="590" y="175" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="602" y="193" font-size="10" font-weight="700" fill="#0F766E">SIP-311 · ACTION</text>
+            <text x="602" y="210" font-size="11" font-weight="600" fill="#0F172A">July P1 root-cause</text>
+            <text x="602" y="225" font-size="10" fill="#64748B">Tom Nakamura · 18 Jul ✓</text>
+          </g>
+          <g class="item-card">
+            <rect x="590" y="270" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="602" y="288" font-size="10" font-weight="700" fill="#0F766E">SIP-313 · ACTION</text>
+            <text x="602" y="305" font-size="11" font-weight="600" fill="#0F172A">Payments SIP accel.</text>
+            <text x="602" y="320" font-size="10" fill="#64748B">Vikram Patel · 22 Jul</text>
+          </g>
+
+          <!-- ============ NODES — SteerCo column (x=870) ============ -->
+          <g class="item-card">
+            <rect x="870" y="80" width="220" height="60" rx="6" fill="#FEF3C7" stroke="#F0A202" stroke-width="1.5"/>
+            <text x="882" y="98" font-size="10" font-weight="700" fill="#B45309">D-STE-1 · DECISION</text>
+            <text x="882" y="115" font-size="11" font-weight="600" fill="#0F172A">Payments Mod → RED</text>
+            <text x="882" y="130" font-size="10" fill="#64748B">Recovery plan mandated</text>
+          </g>
+          <g class="item-card">
+            <rect x="870" y="150" width="220" height="60" rx="6" fill="#FEF3C7" stroke="#F0A202" stroke-width="1.5"/>
+            <text x="882" y="168" font-size="10" font-weight="700" fill="#B45309">D-STE-2 · DECISION</text>
+            <text x="882" y="185" font-size="11" font-weight="600" fill="#0F172A">R-041 Critical · exit-clause auth.</text>
+            <text x="882" y="200" font-size="10" fill="#64748B">Confirmed by SteerCo</text>
+          </g>
+          <g class="item-card">
+            <rect x="870" y="230" width="220" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="882" y="248" font-size="10" font-weight="700" fill="#0F766E">GOV-401 · ACTION</text>
+            <text x="882" y="265" font-size="11" font-weight="600" fill="#0F172A">Formal contract review</text>
+            <text x="882" y="280" font-size="10" fill="#64748B">Ravi Chandran + Legal · 21 Jul</text>
+          </g>
+          <g class="item-card">
+            <rect x="870" y="310" width="220" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="882" y="328" font-size="10" font-weight="700" fill="#0F766E">STE-A8 · ACTION</text>
+            <text x="882" y="345" font-size="11" font-weight="600" fill="#0F172A">Concentration plan due</text>
+            <text x="882" y="360" font-size="10" fill="#64748B">Marcus Bell · 31 Jul</text>
+          </g>
+
+          <!-- Legend at bottom -->
+          <g transform="translate(30, 425)" font-size="10" fill="#475569">
+            <rect x="0" y="0" width="14" height="10" fill="#FEE2E2" stroke="#DC2626" stroke-width="1"/>
+            <text x="20" y="9">Risk</text>
+            <rect x="70" y="0" width="14" height="10" fill="#CCFBF1" stroke="#0F766E" stroke-width="1"/>
+            <text x="90" y="9">Action</text>
+            <rect x="150" y="0" width="14" height="10" fill="#FEF3C7" stroke="#F0A202" stroke-width="1"/>
+            <text x="170" y="9">Decision</text>
+            <line x1="240" y1="5" x2="270" y2="5" stroke="#DC2626" stroke-width="2.5"/>
+            <text x="277" y="9">Escalation chain (highlighted flow)</text>
+            <line x1="470" y1="5" x2="500" y2="5" stroke="#0F766E" stroke-width="2"/>
+            <text x="507" y="9">Related / supersedes</text>
+            <line x1="630" y1="5" x2="660" y2="5" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="667" y="9">Root-cause link (agent-inferred)</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Insight callout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
+        <div class="col-span-2 tt-card p-4" style="background: linear-gradient(90deg, #FEF2F2 0%, white 60%); border-left: 4px solid var(--tt-red);">
+          <div class="flex items-start gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"></i>
+            <div>
+              <div class="text-sm font-semibold text-slate-900">This is what a human would have missed</div>
+              <div class="text-xs text-slate-700 mt-1 leading-relaxed">
+                On <strong>Friday 10 July</strong>, three different senior leaders — Priya Deshmukh, Sarah Whitmore, Ravi Chandran — were independently working on <strong>the same underlying issue</strong> in three different systems (Jira, email, Teams war-room). No one saw the pattern until the Correlation Agent traversed the knowledge graph on Saturday morning and produced a single narrative.
+                By SteerCo on Tuesday, the story was already assembled: <strong>4 forums, 6 days, 12 tickets, one root cause, one recommended decision path</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tt-card p-4">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">What the Tower did</div>
+          <ul class="text-xs text-slate-700 space-y-1.5">
+            <li class="flex items-start gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0"></i>Auto-linked 12 tickets across 4 forums via `cross-forum:` labels</li>
+            <li class="flex items-start gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0"></i>Consolidated ownership → single CIO-led exit-clause track (GOV-401)</li>
+            <li class="flex items-start gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0"></i>Drafted SteerCo decision paper 08:22 Mon before the meeting</li>
+            <li class="flex items-start gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0"></i>Predicted STE-A1 slip risk (78%) → CIO briefed pre-meeting</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECOND STORY — DORA CIF Mapping Ownership Loop
+         ============================================================ -->
+    <section class="tt-card p-5 mb-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-amber">HIGH</span>
+            <span class="tt-pill tt-pill-blue">GOVERNANCE LOOP CLOSED</span>
+            <span class="tt-pill tt-pill-grey">Detected 12:14 Thu 9 Jul</span>
+          </div>
+          <h2 class="text-lg font-bold text-slate-900">The DORA CIF Mapping Ownership Loop</h2>
+          <p class="text-sm text-slate-600 mt-1 max-w-3xl">
+            An ownership gap raised at Cyber MANCO on Wednesday was closed by ARB the very next morning, updated by Risk MANCO on Friday, and funded at SteerCo on Tuesday. A four-forum loop resolved in six calendar days.
+          </p>
+        </div>
+        <div class="flex flex-col gap-1 items-end text-xs">
+          <div class="text-slate-500">Regulatory deadline</div>
+          <div class="font-bold text-amber-700 text-lg tt-num-mono">30 Sep 2026</div>
+          <div class="text-slate-500">DORA Article 30</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg p-3">
+        <svg viewBox="0 0 1120 350" class="story-svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow-teal2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#0F766E"/>
+            </marker>
+            <marker id="arrow-gold2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#F0A202"/>
+            </marker>
+          </defs>
+
+          <line x1="120" y1="55" x2="1000" y2="55" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="4,4"/>
+          <circle cx="120" cy="55" r="9" fill="#F59E0B" stroke="white" stroke-width="3"/>
+          <circle cx="400" cy="55" r="9" fill="#2563EB" stroke="white" stroke-width="3"/>
+          <circle cx="680" cy="55" r="9" fill="#F59E0B" stroke="white" stroke-width="3"/>
+          <circle cx="960" cy="55" r="9" fill="#DC2626" stroke="white" stroke-width="3"/>
+
+          <text x="120" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">CYBER MANCO</text>
+          <text x="120" y="41" text-anchor="middle" font-size="10" fill="#64748B">Wed 8 Jul</text>
+          <text x="400" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">ARB</text>
+          <text x="400" y="41" text-anchor="middle" font-size="10" fill="#64748B">Thu 9 Jul</text>
+          <text x="680" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">RISK MANCO</text>
+          <text x="680" y="41" text-anchor="middle" font-size="10" fill="#64748B">Fri 10 Jul</text>
+          <text x="960" y="25" text-anchor="middle" font-weight="700" font-size="12" fill="#0F172A">STEERCO</text>
+          <text x="960" y="41" text-anchor="middle" font-size="10" fill="#64748B">Tue 14 Jul</text>
+
+          <!-- Edges -->
+          <path d="M 210,110 C 270,110 320,110 340,120" fill="none" stroke="#0F766E" stroke-width="2.5" opacity="0.75" marker-end="url(#arrow-teal2)"/>
+          <text x="255" y="105" font-size="9" fill="#0F766E" font-weight="600">raises ownership</text>
+
+          <path d="M 490,140 C 550,140 620,155 620,165" fill="none" stroke="#0F766E" stroke-width="2.5" opacity="0.75" marker-end="url(#arrow-teal2)"/>
+          <text x="525" y="135" font-size="9" fill="#0F766E" font-weight="600">informs</text>
+
+          <path d="M 770,190 C 830,190 870,190 900,190" fill="none" stroke="#0F766E" stroke-width="2.5" opacity="0.75" marker-end="url(#arrow-teal2)"/>
+          <text x="800" y="185" font-size="9" fill="#0F766E" font-weight="600">reports to</text>
+
+          <path d="M 490,215 C 550,215 800,240 900,255" fill="none" stroke="#0F766E" stroke-width="2" opacity="0.6" marker-end="url(#arrow-teal2)"/>
+
+          <!-- Cyber column -->
+          <g class="item-card">
+            <rect x="30" y="80" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="42" y="98" font-size="10" font-weight="700" fill="#0F766E">GOV-382 · ACTION</text>
+            <text x="42" y="115" font-size="11" font-weight="600" fill="#0F172A">Raise CIF ownership</text>
+            <text x="42" y="130" font-size="10" fill="#64748B">Sarah Whitmore · 9 Jul ✓</text>
+          </g>
+          <g class="item-card">
+            <rect x="30" y="160" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="42" y="178" font-size="10" font-weight="700" fill="#0F766E">GOV-383 · ACTION</text>
+            <text x="42" y="195" font-size="11" font-weight="600" fill="#0F172A">Draft CIF proposal</text>
+            <text x="42" y="210" font-size="10" fill="#64748B">Priya Deshmukh · 18 Jul</text>
+          </g>
+
+          <!-- ARB column -->
+          <g class="item-card">
+            <rect x="310" y="90" width="180" height="60" rx="6" fill="#FEF3C7" stroke="#F0A202" stroke-width="1.5"/>
+            <text x="322" y="108" font-size="10" font-weight="700" fill="#B45309">D-ARB-4 · DECISION</text>
+            <text x="322" y="125" font-size="11" font-weight="600" fill="#0F172A">Architecture accepts</text>
+            <text x="322" y="140" font-size="10" fill="#64748B">CIF mapping ownership</text>
+          </g>
+          <g class="item-card">
+            <rect x="310" y="185" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="322" y="203" font-size="10" font-weight="700" fill="#0F766E">EAG-126 · ACTION</text>
+            <text x="322" y="220" font-size="11" font-weight="600" fill="#0F172A">Close ownership loop</text>
+            <text x="322" y="235" font-size="10" fill="#64748B">Elena Rivera · 25 Jul</text>
+          </g>
+
+          <!-- Risk column -->
+          <g class="item-card">
+            <rect x="590" y="160" width="180" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="602" y="178" font-size="10" font-weight="700" fill="#0F766E">RSK-202 · ACTION</text>
+            <text x="602" y="195" font-size="11" font-weight="600" fill="#0F172A">DORA update SteerCo</text>
+            <text x="602" y="210" font-size="10" fill="#64748B">Angela Rossi · 14 Jul ✓</text>
+          </g>
+
+          <!-- SteerCo column -->
+          <g class="item-card">
+            <rect x="870" y="160" width="220" height="60" rx="6" fill="#FEF3C7" stroke="#F0A202" stroke-width="1.5"/>
+            <text x="882" y="178" font-size="10" font-weight="700" fill="#B45309">D-STE-3 · DECISION</text>
+            <text x="882" y="195" font-size="11" font-weight="600" fill="#0F172A">£1.2M DORA Q3 uplift</text>
+            <text x="882" y="210" font-size="10" fill="#64748B">Approved</text>
+          </g>
+          <g class="item-card">
+            <rect x="870" y="230" width="220" height="60" rx="6" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.5"/>
+            <text x="882" y="248" font-size="10" font-weight="700" fill="#0F766E">GOV-403 · ACTION</text>
+            <text x="882" y="265" font-size="11" font-weight="600" fill="#0F172A">Release £1.2M funding</text>
+            <text x="882" y="280" font-size="10" fill="#64748B">Fiona Delacroix · 21 Jul</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="mt-4 tt-card p-4" style="background: linear-gradient(90deg, #F0FDF4 0%, white 60%); border-left: 4px solid var(--tt-green);">
+        <div class="flex items-start gap-3">
+          <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold text-slate-900">This is what the loop looks like when it works</div>
+            <div class="text-xs text-slate-700 mt-1 leading-relaxed">
+              Gap identified Wed → resolved Thu → informed Fri → funded Tue. A six-day cross-forum loop that historically would have taken two-to-three MANCO cycles (six-to-nine weeks). The Correlation Agent surfaced the loop on Thursday morning and tracked its closure to SteerCo — so the story that landed with the board was already complete.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ALL DETECTED CORRELATIONS
+         ============================================================ -->
+    <section>
+      <div class="flex items-end justify-between mb-4">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Watchlist</div>
+          <h2 class="text-lg font-bold text-slate-900">Everything else the Correlation Agent is watching</h2>
+        </div>
+        <a href="ask.html" class="text-xs font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1">
+          Ask the Tower about a specific theme <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- Card 1 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-amber">RECURRING THEME</span>
+            <span class="tt-pill tt-pill-grey">6 forums</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">Cloud FY26 budget variance</div>
+          <p class="text-xs text-slate-600 mt-1">Discussed in 4 of last 6 MANCOs; escalated to SteerCo 14 Jul; £900k over plan; treatment plan due FY27.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="ticket" class="w-3 h-3"></i> 6 tickets · <span class="font-semibold text-slate-700">FIN-141, FIN-142, FIN-143 +3</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-red">SILENT RISK</span>
+            <span class="tt-pill tt-pill-grey">Not in GRC</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">Wealth Digital cyber sign-off dependency</div>
+          <p class="text-xs text-slate-600 mt-1">Referenced in Cyber MANCO 8 Jul and SteerCo 14 Jul but never recorded in the risk register. Recommend adding as R-NEW-8.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="triangle-alert" class="w-3 h-3 text-red-600"></i> <span class="text-red-700 font-semibold">Recommended action</span> · draft ready in Jira
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-blue">BLOCKER CHAIN</span>
+            <span class="tt-pill tt-pill-grey">3-hop</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">MFA legacy → LegacyCRM → Oracle sunset</div>
+          <p class="text-xs text-slate-600 mt-1">MFA rollout blocked by LegacyCRM; LegacyCRM is a hard-blocker in the Oracle sunset plan. Three tickets share this dependency chain.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="git-branch" class="w-3 h-3"></i> GOV-387 → EAG-125 → EAG-122
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-amber">RECURRING THEME</span>
+            <span class="tt-pill tt-pill-grey">3 forums</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">Data engineering key-person risk</div>
+          <p class="text-xs text-slate-600 mt-1">Raised in Risk MANCO 10 Jul; referenced in SteerCo 14 Jul; mentioned in emails from Rachel Martin twice this week.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="ticket" class="w-3 h-3"></i> RSK-203 · linked risk R-072
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-red">SILENT RISK</span>
+            <span class="tt-pill tt-pill-grey">Not in GRC</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">Merchant reputational exposure</div>
+          <p class="text-xs text-slate-600 mt-1">Two Tier-1 merchants formally wrote to Northwind after 3 Jul outage. Referenced in Cyber MANCO minutes but not yet raised as a formal risk.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="triangle-alert" class="w-3 h-3 text-red-600"></i> Draft <span class="font-semibold text-slate-700">R-NEW-9</span> queued for Risk MANCO
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="tt-card p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tt-pill tt-pill-teal">OWNERSHIP RESOLVED</span>
+            <span class="tt-pill tt-pill-grey">Closed 9 Jul</span>
+          </div>
+          <div class="text-sm font-semibold text-slate-900">DORA Article 30 CIF mapping (see loop story ↑)</div>
+          <p class="text-xs text-slate-600 mt-1">Gap surfaced Wed → Architecture accepted ownership Thu → funded at SteerCo Tue. Timeline collapsed from typical 6–9 weeks to 6 days.</p>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-3 h-3 text-green-600"></i> Resolved · EAG-126 in flight
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="tt-card p-4 mt-6 flex items-center gap-4">
+      <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+        <i data-lucide="sparkles" class="w-5 h-5 text-teal-700"></i>
+      </div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">How the Correlation Agent works</div>
+        <div class="text-xs text-slate-600 mt-0.5">
+          Neptune knowledge graph over every meeting, email, chat and document. Nightly sweep detects patterns: <em>recurring themes, silent risks, blocker chains, ownership gaps, cost-delivery links, sentiment-to-service correlations</em>. High-confidence findings queued for HITL review. Every claim is cited back to source artefacts.
+        </div>
+      </div>
+      <a href="ask.html" class="text-xs font-semibold text-white px-3 py-2 rounded-lg flex items-center gap-1.5" style="background: var(--tt-navy)">
+        Ask the Tower <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+
+    <footer class="text-center text-xs text-slate-500 py-6">
+      Cross-Forum Correlation · Powered by the Correlation Agent · Neptune graph + Llama 3.3 70B
+    </footer>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script>
+    renderTopNav('correlation');
+    function correlation() {
+      return {
+        init() { this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); }); }
+      }
+    }
+  </script>
+</body>
+</html>
