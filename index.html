@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Executive Cockpit · Technology Management Tower · Northwind Technology</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="max-w-[1400px] mx-auto px-6 py-6" x-data="cockpit()" x-init="init()">
+
+    <!-- HERO BAND -->
+    <section class="tt-card p-6 mb-6 tt-fade-in">
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-4 flex items-center gap-6">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Technology Health</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="tt-score-hero" x-text="data.healthScore"></span>
+              <span class="tt-score-suffix">/ 100</span>
+              <span class="text-sm font-semibold ml-2" :class="TT.deltaClass(data.healthDelta)">
+                <span x-text="TT.deltaArrow(data.healthDelta)"></span>
+                <span x-text="Math.abs(data.healthDelta)"></span> WoW
+              </span>
+            </div>
+            <div class="text-xs text-slate-500 mt-2" x-text="data.reportedAt"></div>
+          </div>
+          <!-- Circular progress -->
+          <div class="relative w-24 h-24">
+            <svg viewBox="0 0 100 100" class="w-24 h-24 -rotate-90">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#E2E8F0" stroke-width="10" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="url(#tealGrad)" stroke-width="10"
+                stroke-linecap="round"
+                :stroke-dasharray="`${data.healthScore * 2.64} 264`" />
+              <defs>
+                <linearGradient id="tealGrad" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#02C39A" />
+                  <stop offset="100%" stop-color="#0B1F3A" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-8 flex flex-col justify-center">
+          <div class="text-[15px] leading-relaxed text-slate-800" x-text="data.narrative"></div>
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center gap-2">
+              <span class="tt-provenance"><span class="tt-provenance-dot"></span> Fresh · 47 sources · 5 forums</span>
+              <span class="tt-provenance"><span class="tt-provenance-dot"></span> 9 agents · last run 06:52</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="ask.html" class="text-xs font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+                <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Ask the Tower
+              </a>
+              <button class="text-xs font-semibold text-white px-3 py-2 rounded-lg flex items-center gap-1.5" style="background: var(--tt-navy)">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Weekly Pack
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 1: Initiatives ribbon + Health breakdown -->
+    <section class="grid grid-cols-12 gap-6 mb-6">
+
+      <!-- Strategic initiatives -->
+      <div class="col-span-12 lg:col-span-8 tt-card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Strategic Initiatives</div>
+            <div class="text-base font-semibold text-slate-900 mt-0.5">8 active · 6 <span class="tt-pill tt-pill-green">GREEN</span> · 2 <span class="tt-pill tt-pill-amber">AMBER</span> · 1 <span class="tt-pill tt-pill-red">RED</span></div>
+          </div>
+          <a href="#" class="text-xs font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1">
+            View portfolio <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+          <template x-for="ini in data.initiatives" :key="ini.name">
+            <div class="grid grid-cols-12 gap-3 items-center py-2 px-2 rounded hover:bg-slate-50 cursor-pointer tt-card-hover">
+              <div class="col-span-4 flex items-center gap-2">
+                <span :class="TT.ragClass(ini.rag)" x-text="TT.ragLabel(ini.rag)"></span>
+                <span class="text-sm font-medium text-slate-800" x-text="ini.name"></span>
+              </div>
+              <div class="col-span-4 flex items-center gap-2">
+                <div class="flex-1 tt-bar">
+                  <div class="tt-bar-fill" :class="ini.rag === 'red' ? 'red' : (ini.rag === 'amber' ? 'amber' : 'green')" :style="`width: ${ini.pct}%`"></div>
+                </div>
+                <span class="text-xs text-slate-500 w-8 text-right tt-num-mono" x-text="ini.pct + '%'"></span>
+              </div>
+              <div class="col-span-2 text-xs text-slate-600" x-text="'Forecast: ' + ini.forecast"></div>
+              <div class="col-span-2 text-xs text-slate-600 flex items-center justify-between">
+                <span x-text="'Spend: ' + ini.spend"></span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Health breakdown -->
+      <div class="col-span-12 lg:col-span-4 tt-card p-5">
+        <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">Health Breakdown</div>
+        <div class="space-y-3">
+          <template x-for="row in data.breakdown" :key="row.label">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-slate-700" x-text="row.label"></span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs" :class="TT.deltaClass(row.delta)">
+                    <span x-text="TT.deltaArrow(row.delta)"></span> <span x-text="Math.abs(row.delta)"></span>
+                  </span>
+                  <span class="text-sm font-semibold text-slate-900 w-8 text-right tt-num-mono" x-text="row.score"></span>
+                </div>
+              </div>
+              <div class="tt-bar">
+                <div class="tt-bar-fill" :class="row.color" :style="`width: ${row.score}%`"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 2: Actions / Risks / Cloud / Audit  -->
+    <section class="grid grid-cols-12 gap-6 mb-6">
+
+      <!-- Actions & Decisions -->
+      <div class="col-span-12 md:col-span-6 lg:col-span-3 tt-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Actions & Decisions</div>
+          <i data-lucide="clipboard-check" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-600">New this week</span><span class="font-semibold tt-num-mono" x-text="data.actions.newThisWeek"></span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Closed this week</span><span class="font-semibold tt-num-mono text-green-700" x-text="data.actions.closedThisWeek"></span></div>
+          <div class="flex justify-between">
+            <span class="text-slate-600">Overdue</span>
+            <span class="font-semibold tt-num-mono text-red-700 flex items-center gap-1">
+              <span x-text="data.actions.overdue"></span>
+              <span class="text-xs text-green-700">▼2</span>
+            </span>
+          </div>
+          <div class="flex justify-between"><span class="text-slate-600">MANCO decisions pending</span><span class="font-semibold tt-num-mono text-amber-700" x-text="data.actions.pendingDecisions"></span></div>
+        </div>
+        <a href="actions.html" class="mt-4 block text-center text-xs font-semibold text-teal-700 hover:text-teal-900">View register →</a>
+      </div>
+
+      <!-- Top 5 Risks -->
+      <div class="col-span-12 md:col-span-6 lg:col-span-5 tt-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Top 5 Risks · WoW movement</div>
+          <i data-lucide="triangle-alert" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <div class="space-y-2.5">
+          <template x-for="r in data.risks" :key="r.id">
+            <div class="flex items-center gap-3 text-sm">
+              <span class="text-xs text-slate-400 tt-num-mono w-12" x-text="r.id"></span>
+              <span class="flex-1 text-slate-800 truncate" x-text="r.title"></span>
+              <span class="text-xs text-slate-500 hidden md:inline" x-text="r.forum"></span>
+              <span :class="'tt-pill ' + (r.rating === 'Critical' ? 'tt-pill-red' : r.rating === 'High' ? 'tt-pill-amber' : 'tt-pill-blue')" x-text="r.rating.toUpperCase()"></span>
+              <span class="text-xs w-6 text-right" :class="r.movement === 'up' ? 'tt-delta-down' : (r.movement === 'down' ? 'tt-delta-up' : 'tt-delta-flat')">
+                <span x-text="r.movement === 'up' ? '▲' : r.movement === 'down' ? '▼' : '='"></span>
+              </span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Cloud -->
+      <div class="col-span-12 md:col-span-6 lg:col-span-2 tt-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Cloud Run-Rate</div>
+          <i data-lucide="cloud" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <div class="text-sm">
+          <div class="text-slate-600 text-xs mb-1">MTD spend</div>
+          <div class="font-semibold text-slate-900 text-lg tt-num-mono" x-text="TT.fmtGBP(data.cloud.mtdActual)"></div>
+          <div class="text-xs text-red-700 mb-3">+£120k vs plan</div>
+          <div class="text-slate-600 text-xs mb-1">FY forecast</div>
+          <div class="font-semibold text-slate-900 text-lg tt-num-mono" x-text="TT.fmtGBP(data.cloud.fyForecast)"></div>
+          <div class="text-xs text-amber-700">+3.4% vs plan</div>
+          <div class="mt-3 pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600">Savings identified</div>
+            <div class="font-semibold text-green-700 tt-num-mono" x-text="TT.fmtGBP(data.cloud.savings) + ' / yr'"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit -->
+      <div class="col-span-12 md:col-span-6 lg:col-span-2 tt-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Audit & Compliance</div>
+          <i data-lucide="shield-check" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <div class="text-sm">
+          <div class="text-slate-600 text-xs mb-1">Open findings</div>
+          <div class="font-semibold text-slate-900 text-lg tt-num-mono">
+            <span x-text="data.audit.openFindings"></span>
+            <span class="text-xs text-red-700 font-medium" x-text="'(' + data.audit.overdueFindings + ' overdue)'"></span>
+          </div>
+          <div class="mt-3 text-slate-600 text-xs mb-1">Next audit</div>
+          <div class="font-medium text-slate-800 text-xs" x-text="data.audit.nextAudit"></div>
+          <div class="mt-3 pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600">Evidence readiness</div>
+            <div class="font-semibold text-slate-900 tt-num-mono">
+              <span x-text="data.audit.evidenceReadiness + '%'"></span>
+              <span class="text-xs text-green-700 font-medium" x-text="'▲ ' + data.audit.evidenceReadinessDelta + '%'"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 3: Recommendations panel -->
+    <section class="tt-card p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Executive Recommendations</div>
+          <div class="text-sm text-slate-600 mt-0.5">Ranked by expected value · generated by the Executive Reporting Agent · human review required</div>
+        </div>
+        <span class="tt-pill tt-pill-teal">HITL · Awaiting your decision</span>
+      </div>
+      <div class="divide-y divide-slate-100">
+        <template x-for="rec in data.recommendations" :key="rec.id">
+          <div class="tt-reco-row grid grid-cols-12 gap-4 items-center py-3 px-2 rounded">
+            <div class="col-span-1 flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-700" x-text="rec.rank"></div>
+            </div>
+            <div class="col-span-6 text-sm text-slate-800" x-text="rec.text"></div>
+            <div class="col-span-2 text-xs">
+              <div class="text-slate-500">Impact</div>
+              <div class="font-medium text-slate-800" x-text="rec.impact"></div>
+            </div>
+            <div class="col-span-1 text-xs">
+              <div class="text-slate-500">Effort</div>
+              <div class="font-medium text-slate-800" x-text="rec.effort"></div>
+            </div>
+            <div class="col-span-2 flex items-center gap-1 justify-end">
+              <button @click="acceptReco(rec)" class="text-xs font-semibold px-2.5 py-1.5 rounded-md text-white" style="background: var(--tt-teal)">Accept</button>
+              <button class="text-xs font-semibold px-2 py-1.5 rounded-md text-slate-700 border border-slate-200 hover:bg-slate-50">Defer</button>
+              <button class="text-xs font-semibold px-2 py-1.5 rounded-md text-slate-500 hover:text-red-700">Reject</button>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="tt-ai-footer">
+        <i data-lucide="sparkles" class="w-3 h-3"></i>
+        Composed by Executive Reporting Agent · Model: Llama 3.3 70B · Confidence grade: A · <a href="#" class="underline hover:text-slate-700">See reasoning</a>
+      </div>
+    </section>
+
+    <!-- Toast for accepted rec -->
+    <div x-show="toast" x-transition class="fixed bottom-6 right-6 tt-card p-4 flex items-center gap-3 z-50" style="background: white; border-left: 4px solid var(--tt-teal);">
+      <i data-lucide="check-circle-2" class="w-5 h-5 text-teal-600"></i>
+      <div>
+        <div class="text-sm font-semibold text-slate-900">Recommendation accepted</div>
+        <div class="text-xs text-slate-600" x-text="toastMsg"></div>
+      </div>
+      <button @click="toast=false" class="text-slate-400 hover:text-slate-700"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+
+    <!-- Footer strip -->
+    <footer class="text-center text-xs text-slate-500 py-6">
+      Technology Management Tower · Powered by AWS Bedrock (Llama 3.3 70B, Claude 3.5 Sonnet) · <a href="ask.html" class="underline hover:text-slate-700">Ask the Tower</a>
+    </footer>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script>
+    renderTopNav('home');
+
+    function cockpit() {
+      return {
+        data: window.NORTHWIND,
+        TT: window.TT,
+        toast: false,
+        toastMsg: '',
+        init() {
+          // Re-render lucide icons after Alpine has stamped templates
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+        acceptReco(rec) {
+          this.toastMsg = 'Draft Jira ticket created in GOV project · owner will be notified in Teams';
+          this.toast = true;
+          setTimeout(() => this.toast = false, 4000);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

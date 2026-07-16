@@ -1,48 +1,72 @@
-# VFS | Audit Remediations — Executive Slide
+# Technology Management Tower — Executive Demo
 
-A visually attractive, executive-friendly rework of the VFS Audit Remediations
-status slide. Designed for CIO, CEO, and senior executive audiences: headline
-KPIs, charts, and short narrative callouts instead of a dense list of items.
+An interactive prototype of the **AI-powered Technology Management Tower** for CIOs and Management Committees. Built to be shown live to senior management.
 
-## What's in the deck
+## What This Is
 
-The slide (`index.html`) is a single, self-contained HTML file that renders a
-16:9 executive dashboard with:
+A clickable prototype that walks executives through the operating loop:
 
-- **Header** — VFS brand accent + subtitle ("FY26 Close-out & FY27 Outlook").
-- **5 KPI cards** — Completion Rate, Total Closed, Open Items, FY26 Audits
-  Delivered, FY27 Q1 Audits Planned.
-- **Burndown chart** — Open vs. cumulative Closed across FY26 Q1 → FY27 Q1.
-- **Donut chart** — 25 closed remediations split by Parent Audit stream.
-- **Grouped bar chart** — FY26 vs FY27 Q1 (Audits, Remediations, Completed, Open).
-- **4 narrative callouts** — FY26 Closed, FY26 In Progress, FY27 Programme,
-  Capacity Note.
+**Governance meetings → AI analysis → Actions in Jira → Follow-up → Executive Cockpit**
 
-## How to view it
+Fictional company: **Northwind Technology** (mid-size financial services, 3,500 tech staff, £240M spend).
 
-1. **Locally** — open `index.html` in any modern browser.
-2. **GitHub Pages** — enable Pages on this repo (Settings → Pages → deploy from
-   `main` branch, root folder) to publish a public link.
-3. **Export to PDF** — open in a browser and use *Print → Save as PDF*,
-   Landscape, no margins. The slide is sized to fit a standard 16:9 page.
+## Demo Walkthrough (8 minutes)
 
-## Tech notes
+| # | Screen | What to click | Talking point |
+|---|---|---|---|
+| 1 | Executive Cockpit (`index.html`) | Land here | "This is what the CIO sees Monday morning — one page, cited, actionable." |
+| 2 | Meeting Library (`meetings.html`) | "Meetings" in nav | "5 governance forums, all ingested last week." |
+| 3 | Meeting Deep-Dive (`meeting.html?id=cyber-manco-2026-07-08`) | Click Cyber MANCO → "Process with Tower" | "Watch the agents extract structure — decisions, risks, actions, owners, due dates." |
+| 4 | HITL Approval | Approve tickets in the card | "Secretariat approves 7 tickets in 60 seconds vs. 2 hours of typing." |
+| 5 | Actions Register (`actions.html`) | Actions in nav | "Every governance action in one register. Filter by forum, owner, age." |
+| 6 | Cross-Forum Correlation (`correlation.html`) | "The PaymentGate story" | "The Tower's superpower — cross-source correlation no human could do at pace." |
+| 7 | Ask the Tower (`ask.html`) | Type a question | "Cited, natural-language answers. Powered by Llama 3.3 70B." |
+| 8 | Deck (`deck.html`) | Optional — the narrative | "Same content in slide form for the leave-behind." |
 
-- Pure HTML + CSS + [Chart.js 4.4](https://www.chartjs.org/) via CDN — no build
-  step, no dependencies to install.
-- Brand palette anchored on Vodacom red (`#E60000`), with green (`#16A34A`) for
-  positive status and blue (`#2563EB`) for informational callouts.
-- Print-friendly: prints as a single landscape page.
+## Tech Stack
 
-## Data sources
+- Static HTML + Tailwind CSS (via CDN) + Alpine.js (via CDN) — no build step, hosted on GitHub Pages
+- Llama 3.3 70B responses via **Groq** free tier (cached for reliability; optional live-mode via a Cloudflare Worker)
+- All data is fictional and lives in this repo — nothing confidential
 
-Figures are transcribed from the source slide provided by the audit team:
+## Running Locally
 
-| Metric                        | FY26 | FY27 Q1 |
-| ----------------------------- | ---: | ------: |
-| Audits                        |    7 |       4 |
-| Remediation actions           |   18 |       7 |
-| Completed                     |   18 |       7 |
-| Open (carried forward)        |    0 |       0 |
+```bash
+# Any static server works — e.g.
+python3 -m http.server 8080
+# then open http://localhost:8080
+```
 
-Total closed remediations: **25** across 8 parent audit streams.
+## Deploying to GitHub Pages
+
+1. **Settings → Pages** in this repo
+2. **Source:** Deploy from a branch
+3. **Branch:** `demo/tower-prototype` / root
+4. Save. URL will be `https://snerantie.github.io/audit-slide-update/`
+
+## File Map
+
+```
+/
+├── index.html               Executive Cockpit — the landing page
+├── meetings.html            Meeting Library — 5 governance forums
+├── meeting.html             Single meeting deep-dive with agent processing
+├── actions.html             Governance Actions Register (Jira mirror)
+├── correlation.html         Cross-Forum Correlation — the PaymentGate story
+├── ask.html                 Ask the Tower — Llama-powered chat
+├── deck.html                Reveal.js narrative deck for the pitch
+├── assets/
+│   ├── css/tower.css        Custom styles
+│   └── js/tower.js          Shared UI + Alpine components
+├── data/
+│   ├── company.js           Northwind Technology seeded data
+│   ├── meetings/*.js        5 meeting artefacts (raw minutes + processed)
+│   └── llama-responses.js   Cached Q&A pairs for Ask-the-Tower
+└── docs/
+    ├── demo-script.md       Minute-by-minute walkthrough
+    └── qna-cheatsheet.md    Executive questions with drafted answers
+```
+
+## Attribution
+
+Demo built as an implementation companion to the Technology Management Tower design blueprint.
