@@ -2,7 +2,8 @@
    Contains raw minute text (as HTML with entity highlights) plus the
    fully-processed output the agents would extract. */
 
-window.MEETING_CYBER = {
+window.MEETINGS_BY_ID = window.MEETINGS_BY_ID || {};
+window.MEETINGS_BY_ID['cyber-manco-2026-07-08'] = window.MEETING_CYBER = {
   id: 'cyber-manco-2026-07-08',
   forum: 'Cyber MANCO',
   forumShort: 'Cyber',
