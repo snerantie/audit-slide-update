@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meeting · Technology Management Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+  <style>
+    /* Highlights hidden until processing */
+    .tt-paper.pre-process .tt-highlight-action,
+    .tt-paper.pre-process .tt-highlight-risk,
+    .tt-paper.pre-process .tt-highlight-decision {
+      background: transparent; border-bottom: none; cursor: text;
+    }
+    .tt-paper .tt-highlight-action.pulse   { animation: pulse-teal 1s ease-out; }
+    .tt-paper .tt-highlight-risk.pulse     { animation: pulse-red  1s ease-out; }
+    .tt-paper .tt-highlight-decision.pulse { animation: pulse-gold 1s ease-out; }
+    @keyframes pulse-teal { 0% { background: rgba(0,168,150,0.55);} 100% { background: rgba(0,168,150,0.15);} }
+    @keyframes pulse-red  { 0% { background: rgba(220,38,38,0.45); } 100% { background: rgba(220,38,38,0.10);} }
+    @keyframes pulse-gold { 0% { background: rgba(240,162,2,0.55); } 100% { background: rgba(240,162,2,0.15);} }
+
+    .tt-agent-log {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px; line-height: 1.55;
+      background: #0F172A; color: #94A3B8; padding: 10px 12px; border-radius: 6px;
+      max-height: 120px; overflow-y: auto;
+    }
+    .tt-agent-log .log-line { display: block; }
+    .tt-agent-log .log-line.info   { color: #94A3B8; }
+    .tt-agent-log .log-line.ok     { color: #22D3EE; }
+    .tt-agent-log .log-line.warn   { color: #FBBF24; }
+    .tt-agent-log .log-line.result { color: #22C55E; font-weight: 600; }
+
+    .tt-dots span { display: inline-block; width: 4px; height: 4px; border-radius: 999px; background: currentColor; margin: 0 1px; animation: tt-bounce 1.2s infinite ease-in-out; }
+    .tt-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .tt-dots span:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes tt-bounce { 0%,80%,100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+
+    /* Compact agent timeline for archived meetings */
+    .tt-agent-timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .tt-agent-timeline .step { text-align: center; padding: 6px 4px; border-radius: 6px; background: #F0FDFA; border: 1px solid #99F6E4; }
+    .tt-agent-timeline .step .step-name { font-size: 10px; color: #0F766E; font-weight: 600; }
+    .tt-agent-timeline .step .step-status { font-size: 10px; color: #14B8A6; }
+  </style>
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="max-w-[1500px] mx-auto px-6 py-6" x-data="meetingPage()" x-init="init()">
+
+    <!-- Breadcrumb + header -->
+    <div class="flex items-center gap-2 text-xs text-slate-500 mb-3">
+      <a href="meetings.html" class="hover:text-slate-900">Meeting Library</a>
+      <i data-lucide="chevron-right" class="w-3 h-3"></i>
+      <span x-text="meeting.forum"></span>
+      <i data-lucide="chevron-right" class="w-3 h-3"></i>
+      <span x-text="meeting.dateLabel"></span>
+    </div>
+
+    <!-- Meeting header card -->
+    <div class="tt-card p-5 mb-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span :class="'tt-pill ' + forumPillClass(meeting.forumColor)" x-text="meeting.forumShort"></span>
+            <span x-show="state === 'unprocessed'" class="tt-pill tt-pill-amber flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> PENDING PROCESSING
+            </span>
+            <span x-show="state === 'processing'" class="tt-pill tt-pill-blue flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> PROCESSING
+            </span>
+            <span x-show="state === 'awaiting-hitl'" class="tt-pill tt-pill-teal flex items-center gap-1">
+              <i data-lucide="user-check" class="w-3 h-3"></i> AWAITING SECRETARIAT REVIEW
+            </span>
+            <span x-show="state === 'approved'" class="tt-pill tt-pill-green flex items-center gap-1">
+              <i data-lucide="check-circle-2" class="w-3 h-3"></i> APPROVED · TICKETS CREATED
+            </span>
+            <span x-show="state === 'archived'" class="tt-pill tt-pill-teal flex items-center gap-1">
+              <i data-lucide="archive" class="w-3 h-3"></i> PROCESSED · <span x-text="meeting.processedAt || ''"></span>
+            </span>
+          </div>
+          <h1 class="text-xl font-bold text-slate-900" x-text="meeting.forum + ' — ' + meeting.dateLabel"></h1>
+          <div class="text-sm text-slate-600 mt-1">
+            <span x-text="meeting.time"></span> · <span x-text="meeting.chair"></span> · <span x-text="meeting.location"></span>
+          </div>
+          <div class="text-xs text-slate-500 mt-1" x-show="state === 'archived' && meeting.approvedBy">
+            Draft prepared by Meeting Intelligence Agent · reviewed by <span class="font-medium text-slate-700" x-text="meeting.approvedBy"></span>
+          </div>
+        </div>
+        <div class="text-right text-xs text-slate-500">
+          <div>Attendees: <span class="font-semibold text-slate-800" x-text="meeting.attendees.length"></span></div>
+          <div>Agenda items: <span class="font-semibold text-slate-800" x-text="meeting.agenda.length"></span></div>
+          <div>Actions: <span class="font-semibold text-teal-700" x-text="meeting.processed.actions.length"></span></div>
+          <div>Risks: <span class="font-semibold text-red-700" x-text="meeting.processed.risks.length"></span></div>
+          <div>Decisions: <span class="font-semibold text-amber-700" x-text="meeting.processed.decisions.length"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- LEFT: Minute paper -->
+      <div class="col-span-12 lg:col-span-7">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Minute Document</div>
+          <div class="text-xs text-slate-500 flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            SharePoint · <span x-text="sharepointPath()"></span>
+          </div>
+        </div>
+        <div class="tt-paper" :class="state === 'unprocessed' ? 'pre-process' : ''" x-html="meeting.minuteHtml" x-ref="paper"></div>
+      </div>
+
+      <!-- RIGHT: Processing / structure panel -->
+      <div class="col-span-12 lg:col-span-5 space-y-5">
+
+        <!-- Trigger (only for pending meetings) -->
+        <div class="tt-card p-5" x-show="state === 'unprocessed'">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
+              <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-900">Process with the Tower</div>
+              <div class="text-xs text-slate-500">Run 4 specialist agents on this meeting</div>
+            </div>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1 mb-4">
+            <li class="flex items-center gap-2"><i data-lucide="circle" class="w-3 h-3"></i> Meeting Intelligence Agent — extract structure</li>
+            <li class="flex items-center gap-2"><i data-lucide="circle" class="w-3 h-3"></i> Action Extraction Agent — owner, due date, priority</li>
+            <li class="flex items-center gap-2"><i data-lucide="circle" class="w-3 h-3"></i> Duplicate Detection — check against Jira</li>
+            <li class="flex items-center gap-2"><i data-lucide="circle" class="w-3 h-3"></i> Jira Administration Agent — draft tickets</li>
+          </ul>
+          <button @click="startProcessing()"
+            class="w-full text-sm font-semibold px-4 py-3 rounded-lg text-white flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+            style="background: linear-gradient(135deg, #02C39A 0%, #0B1F3A 120%);">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            Process with Tower
+          </button>
+          <div class="mt-3 text-[11px] text-slate-500 flex items-start gap-1.5">
+            <i data-lucide="shield" class="w-3 h-3 mt-0.5 flex-shrink-0"></i>
+            Data stays in your tenant. PII redacted before persistence. Every action is auditable. Nothing is written to Jira until you approve.
+          </div>
+        </div>
+
+        <!-- Compact agent timeline for archived meetings -->
+        <div class="tt-card p-4" x-show="state === 'archived'" x-cloak>
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Agent Chain · Completed</div>
+          <div class="tt-agent-timeline">
+            <div class="step"><div class="step-name">Meeting Intel</div><div class="step-status">✓ 2.1s</div></div>
+            <div class="step"><div class="step-name">Action Extract</div><div class="step-status">✓ 3.4s</div></div>
+            <div class="step"><div class="step-name">Dedup</div><div class="step-status">✓ 1.7s</div></div>
+            <div class="step"><div class="step-name">Jira Admin</div><div class="step-status">✓ 2.3s</div></div>
+          </div>
+          <div class="tt-ai-footer">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            Llama 3.3 70B · Guardrails passed · <span class="underline hover:text-slate-800 cursor-pointer">Audit trail</span>
+          </div>
+        </div>
+
+        <!-- Full agent chain (during processing / after approval) -->
+        <div class="tt-card p-5" x-show="state === 'processing' || state === 'awaiting-hitl' || state === 'approved'" x-cloak>
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">Agent Chain</div>
+          <div class="space-y-3">
+            <template x-for="(agent, i) in agents" :key="agent.name">
+              <div>
+                <div class="tt-agent-row">
+                  <div class="tt-agent-avatar" x-text="agent.initials"></div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-slate-900" x-text="agent.name"></div>
+                    <div class="text-xs text-slate-500 truncate" x-text="agent.currentTask"></div>
+                  </div>
+                  <div class="text-xs font-semibold flex items-center gap-1.5">
+                    <template x-if="agent.status === 'idle'"><span class="text-slate-400">Queued</span></template>
+                    <template x-if="agent.status === 'running'">
+                      <span class="text-blue-600 flex items-center gap-1.5">
+                        <span class="tt-dots"><span></span><span></span><span></span></span>
+                        Running
+                      </span>
+                    </template>
+                    <template x-if="agent.status === 'done'">
+                      <span class="text-green-700 flex items-center gap-1">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Done
+                        <span class="text-slate-500 ml-1" x-text="agent.durationMs + 'ms'"></span>
+                      </span>
+                    </template>
+                  </div>
+                </div>
+                <div class="tt-agent-log mt-1.5" x-show="agent.status !== 'idle'">
+                  <template x-for="line in agent.log" :key="line.id">
+                    <span :class="'log-line ' + (line.type || 'info')" x-text="line.text"></span>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Extracted structure summary -->
+        <div class="tt-card p-5" x-show="state === 'awaiting-hitl' || state === 'approved' || state === 'archived'" x-cloak>
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">Extracted Structure</div>
+
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span> Decisions (<span x-text="meeting.processed.decisions.length"></span>)
+            </div>
+            <div class="space-y-1.5">
+              <template x-for="d in meeting.processed.decisions" :key="d.id">
+                <div class="text-xs text-slate-700 border-l-2 border-amber-400 pl-2 py-0.5">
+                  <span class="font-semibold" x-text="d.id + ':'"></span> <span x-text="d.text"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="mb-4" x-show="meeting.processed.risks.length > 0">
+            <div class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span> Risks (<span x-text="meeting.processed.risks.length"></span>)
+            </div>
+            <div class="space-y-1.5">
+              <template x-for="r in meeting.processed.risks" :key="r.id">
+                <div class="text-xs text-slate-700 border-l-2 border-red-400 pl-2 py-0.5">
+                  <span class="font-semibold" x-text="r.id + ':'"></span>
+                  <span x-text="r.title"></span>
+                  <template x-if="r.type === 'existing-uplifted' && r.from !== r.to">
+                    <span class="text-red-700 font-semibold ml-1" x-text="'· ' + r.from + ' → ' + r.to + ' (uplift)'"></span>
+                  </template>
+                  <template x-if="r.type === 'new-candidate'">
+                    <span class="text-blue-700 font-semibold ml-1" x-text="'· NEW · ' + r.rating"></span>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="mb-3" x-show="state === 'archived'">
+            <div class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-teal-500"></span> Actions (<span x-text="meeting.processed.actions.length"></span>) · <span class="text-slate-500 font-normal">tickets in Jira</span>
+            </div>
+            <div class="space-y-1 max-h-56 overflow-y-auto pr-1">
+              <template x-for="a in meeting.processed.actions" :key="a.id">
+                <div class="text-xs py-1 flex items-start gap-2 border-b border-slate-100 last:border-b-0">
+                  <span class="font-mono text-[10px] text-slate-500 flex-shrink-0" x-text="a.draftJira.key"></span>
+                  <span class="text-slate-700 flex-1" x-text="a.draftJira.summary"></span>
+                  <span class="tt-pill flex-shrink-0" :class="{
+                    'tt-pill-red': a.priority === 'Critical' || a.priority === 'High',
+                    'tt-pill-amber': a.priority === 'Medium',
+                    'tt-pill-grey': a.priority === 'Low'
+                  }" x-text="a.priority[0]"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="tt-ai-footer">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            Meeting Intelligence Agent · Llama 3.3 70B · Confidence A · <span class="underline hover:text-slate-800 cursor-pointer">Show reasoning</span>
+          </div>
+        </div>
+
+        <!-- HITL card (only for a meeting being processed live) -->
+        <div class="tt-card-teams" x-show="state === 'awaiting-hitl'" x-cloak x-transition>
+          <div class="tt-card-teams-header">
+            <div class="w-6 h-6 rounded-md bg-white flex items-center justify-center">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5" style="color:#464775"></i>
+            </div>
+            <span>Technology Tower Bot · Approval Required</span>
+          </div>
+          <div class="p-4">
+            <div class="text-[13px] font-semibold text-slate-900 mb-1">
+              <span x-text="meeting.forumShort"></span> — <span x-text="meeting.processed.actions.length"></span> governance actions drafted
+            </div>
+            <div class="text-xs text-slate-600 mb-3">
+              4 agents completed. Please review before creating in Jira.
+              <br>
+              <span class="text-[11px] text-slate-500">Confidence: <span x-text="confidenceASummary()"></span> · Duplicate check: <span x-text="dedupSummary()"></span></span>
+            </div>
+
+            <div class="max-h-64 overflow-y-auto pr-1 space-y-1.5">
+              <template x-for="a in meeting.processed.actions" :key="a.id">
+                <div class="flex items-start gap-2 text-xs py-1.5 border-b border-slate-100 last:border-b-0">
+                  <div class="flex-shrink-0 mt-0.5">
+                    <span class="w-4 h-4 rounded-full text-[9px] font-bold text-white inline-flex items-center justify-center"
+                          :class="a.confidenceGrade === 'A' ? 'bg-teal-600' : 'bg-amber-500'"
+                          x-text="a.confidenceGrade"></span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-mono text-[10px] text-slate-500" x-text="a.draftJira.key"></span>
+                      <span class="tt-pill" :class="{
+                        'tt-pill-red': a.priority === 'Critical' || a.priority === 'High',
+                        'tt-pill-amber': a.priority === 'Medium',
+                        'tt-pill-grey': a.priority === 'Low'
+                      }" x-text="a.priority.toUpperCase()"></span>
+                      <template x-if="a.dedup">
+                        <span class="tt-pill tt-pill-blue flex items-center gap-1">
+                          <i data-lucide="link" class="w-2.5 h-2.5"></i>
+                          <span x-text="a.dedup.type"></span>
+                        </span>
+                      </template>
+                    </div>
+                    <div class="text-slate-800 mt-0.5" x-text="a.draftJira.summary"></div>
+                    <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                      <span class="flex items-center gap-1"><i data-lucide="user" class="w-2.5 h-2.5"></i><span x-text="a.ownerCandidate"></span></span>
+                      <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-2.5 h-2.5"></i><span x-text="a.dueLabel"></span></span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
+              <button @click="approveAll()"
+                class="text-xs font-semibold text-white px-3 py-2 rounded flex items-center gap-1.5"
+                style="background: #464775">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                Approve all <span x-text="meeting.processed.actions.length"></span>
+              </button>
+              <button class="text-xs font-semibold text-slate-700 px-3 py-2 rounded border border-slate-200 hover:bg-slate-50">Review individually</button>
+              <button class="text-xs font-semibold text-slate-700 px-3 py-2 rounded border border-slate-200 hover:bg-slate-50">Edit</button>
+              <button class="text-xs font-semibold text-slate-500 px-2 py-2 rounded hover:text-red-700">Reject</button>
+            </div>
+            <div class="mt-3 text-[10px] text-slate-500">
+              Approving will create tickets in Jira · assign owners · post reminders in Teams · link to source meeting.
+            </div>
+          </div>
+        </div>
+
+        <!-- Approved confirmation -->
+        <div class="tt-card p-5" style="background: linear-gradient(180deg, #ECFDF5 0%, white 60%);" x-show="state === 'approved'" x-cloak x-transition>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
+              <i data-lucide="check" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-900"><span x-text="meeting.processed.actions.length"></span> tickets created in Jira</div>
+              <div class="text-xs text-slate-600">Owners notified in Teams · reminders scheduled at T-3 / T-1 / T+0</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-slate-700 space-y-0.5">
+            <div class="flex items-center gap-1.5"><i data-lucide="arrow-right" class="w-3 h-3 text-slate-400"></i> <span x-text="ticketRange()"></span> created</div>
+            <div class="flex items-center gap-1.5" x-show="hasRiskUplift()"><i data-lucide="arrow-right" class="w-3 h-3 text-slate-400"></i> Risk register updated (uplifts + new risks)</div>
+            <div class="flex items-center gap-1.5"><i data-lucide="arrow-right" class="w-3 h-3 text-slate-400"></i> Correlation Agent flagged PaymentGate as cross-forum theme</div>
+          </div>
+          <div class="flex items-center gap-2 mt-4">
+            <a href="actions.html" class="text-xs font-semibold text-white px-3 py-2 rounded-lg flex items-center gap-1.5" style="background: var(--tt-navy)">
+              View Actions Register <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+            <a href="correlation.html" class="text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5">
+              See cross-forum correlation <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="text-center text-xs text-slate-500 py-6">Technology Management Tower · Meeting Deep-Dive</footer>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script src="data/meetings/index.js"></script>
+  <script src="data/meetings/cyber-manco-2026-07-08.js"></script>
+  <script src="data/meetings/arb-2026-07-09.js"></script>
+  <script src="data/meetings/risk-manco-2026-07-10.js"></script>
+  <script src="data/meetings/service-manco-2026-07-11.js"></script>
+  <script src="data/meetings/steerco-2026-07-14.js"></script>
+  <script>
+    renderTopNav('meetings');
+
+    function meetingPage() {
+      const id = TT.qs('id') || 'cyber-manco-2026-07-08';
+      const data = window.MEETINGS_BY_ID[id];
+      const indexEntry = (window.MEETINGS_INDEX || []).find(m => m.id === id) || {};
+
+      return {
+        meeting: data,
+        // 'unprocessed' for pending meetings; 'archived' for already-processed
+        state: indexEntry.status === 'processed' ? 'archived' : 'unprocessed',
+        agents: [
+          {
+            name: 'Meeting Intelligence Agent', initials: 'MI',
+            status: 'idle', currentTask: 'Waiting to start', durationMs: 0, log: [],
+            steps: [
+              { type: 'info', text: '► Fetching transcript from Microsoft Graph (onlineMeetings/*)...' },
+              { type: 'info', text: '  Attendees resolved against Entra ID' },
+              { type: 'info', text: '  Chunking transcript by agenda item...' },
+              { type: 'info', text: '  Extracting decisions, discussions, risks, sentiment...' },
+              { type: 'info', text: '  Model: Llama 3.3 70B · tokens_in=4,821  tokens_out=1,204' },
+              { type: 'ok',   text: '  Guardrails: PII redaction OK · no policy violations' },
+              { type: 'result', text: '✓ 5 agenda items · decisions · risks · discussion points extracted' }
+            ]
+          },
+          {
+            name: 'Action Extraction Agent', initials: 'AX',
+            status: 'idle', currentTask: 'Waiting to start', durationMs: 0, log: [],
+            steps: [
+              { type: 'info', text: '► Scanning for commitments and action language...' },
+              { type: 'info', text: '  Detected 9 candidate actions' },
+              { type: 'info', text: '  Resolving owners against Entra ID directory...' },
+              { type: 'info', text: '  Inferring due dates from context (relative → ISO)...' },
+              { type: 'info', text: '  Assigning priority (impact + regulatory + concentration signals)...' },
+              { type: 'info', text: '  Model: Llama 3.3 70B · tokens_in=2,142  tokens_out=1,890' },
+              { type: 'result', text: '✓ 9 candidates · 7 × Confidence A · 2 × Confidence B' }
+            ]
+          },
+          {
+            name: 'Duplicate Detection', initials: 'DD',
+            status: 'idle', currentTask: 'Waiting to start', durationMs: 0, log: [],
+            steps: [
+              { type: 'info', text: '► Embedding action text (Titan v2)...' },
+              { type: 'info', text: '  Similarity search across 847 open governance tickets...' },
+              { type: 'info', text: '  Rule overlay: same source forum · same owner · similar text' },
+              { type: 'warn', text: '  A-1 → related to GOV-142 (May 2026 PaymentGate contract review) — RELATED, not duplicate' },
+              { type: 'warn', text: '  A-3 → auto-link to GOV-380 (SteerCo agenda item)' },
+              { type: 'result', text: '✓ 0 duplicates blocked · 1 related · 1 auto-link' }
+            ]
+          },
+          {
+            name: 'Jira Administration Agent', initials: 'JA',
+            status: 'idle', currentTask: 'Waiting to start', durationMs: 0, log: [],
+            steps: [
+              { type: 'info', text: '► Drafting Jira tickets · GOV project · Management Action type...' },
+              { type: 'info', text: '  Applying scheme: source labels · confidence grade · RACI...' },
+              { type: 'info', text: '  Cross-linking to Risk R-041, GOV-142, EAG-088, GOV-380...' },
+              { type: 'info', text: '  Attaching source citation with SharePoint deep-link...' },
+              { type: 'info', text: '  Preparing HITL adaptive card for secretariat review...' },
+              { type: 'ok',   text: '  Guardrails: no delete · no close · owner needs Teams confirm' },
+              { type: 'result', text: '✓ Tickets drafted · awaiting approval' }
+            ]
+          }
+        ],
+
+        async startProcessing() {
+          this.state = 'processing';
+          this.$refs.paper.classList.remove('pre-process');
+          for (let i = 0; i < this.agents.length; i++) {
+            const a = this.agents[i];
+            a.status = 'running';
+            a.currentTask = a.steps[0].text.replace(/^► /, '');
+            const started = Date.now();
+            for (let s = 0; s < a.steps.length; s++) {
+              a.log.push({ id: s + '-' + i, ...a.steps[s] });
+              if (a.initials === 'AX' && s >= 2 && s <= 5) this.pulseHighlight(s - 2);
+              await new Promise(r => setTimeout(r, 320 + Math.random() * 200));
+            }
+            a.status = 'done';
+            a.durationMs = Date.now() - started;
+            a.currentTask = a.steps[a.steps.length - 1].text.replace(/^✓ /, '');
+            await new Promise(r => setTimeout(r, 250));
+          }
+          this.state = 'awaiting-hitl';
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+
+        pulseHighlight(offset) {
+          const all = this.$refs.paper.querySelectorAll('.tt-highlight-action, .tt-highlight-risk, .tt-highlight-decision');
+          const target = all[offset * 2] || all[offset] || all[0];
+          if (target) {
+            target.classList.add('pulse');
+            setTimeout(() => target.classList.remove('pulse'), 1000);
+          }
+        },
+
+        approveAll() {
+          this.state = 'approved';
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+
+        forumPillClass(color) {
+          return { red: 'tt-pill-red', amber: 'tt-pill-amber', blue: 'tt-pill-blue', teal: 'tt-pill-teal' }[color] || 'tt-pill-grey';
+        },
+
+        sharepointPath() {
+          const forum = this.meeting.forumShort.toLowerCase().replace(/[^a-z]/g, '-');
+          return `/sites/gov-${forum}/Minutes/${this.meeting.date}_${this.meeting.forumShort}_Minutes.docx`;
+        },
+
+        confidenceASummary() {
+          const a = this.meeting.processed.actions.filter(x => x.confidenceGrade === 'A').length;
+          const b = this.meeting.processed.actions.filter(x => x.confidenceGrade === 'B').length;
+          return `${a} × Grade A · ${b} × Grade B`;
+        },
+
+        dedupSummary() {
+          const linked = this.meeting.processed.actions.filter(x => x.dedup).length;
+          return linked > 0 ? `${linked} related / auto-linked` : 'no duplicates found';
+        },
+
+        ticketRange() {
+          const keys = this.meeting.processed.actions.map(a => a.draftJira.key).sort();
+          return keys.length > 1 ? `${keys[0]} → ${keys[keys.length - 1]}` : keys[0];
+        },
+
+        hasRiskUplift() {
+          return this.meeting.processed.risks.some(r => r.type === 'existing-uplifted' || r.type === 'new-candidate');
+        },
+
+        init() {
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

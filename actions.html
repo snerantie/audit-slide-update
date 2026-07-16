@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Actions Register · Technology Management Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+  <style>
+    .source-icon {
+      width: 16px; height: 16px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: white;
+    }
+    .source-icon.Meeting   { background: #0B1F3A; }
+    .source-icon.Email     { background: #64748B; }
+    .source-icon.Teams     { background: #4B53BC; }
+    .source-icon.SharePoint{ background: #0F766E; }
+
+    tr.expandable-row { cursor: pointer; }
+    tr.expandable-row:hover { background: #F8FAFC; }
+    tr.expanded { background: #F1F5F9 !important; }
+    tr.detail-row td { padding: 0 !important; background: #F8FAFC; }
+    tr.detail-row .detail-inner { padding: 12px 16px; border-top: 1px dashed #CBD5E1; }
+
+    .stat-tile {
+      background: white; border: 1px solid var(--tt-border); border-radius: 8px; padding: 12px 14px;
+    }
+
+    /* Adaptive-card preview */
+    .tt-mini-card { background: white; border: 1px solid #E1DFDD; border-radius: 6px; padding: 8px 10px; }
+    .tt-mini-card-head { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #464775; font-weight: 600; margin-bottom: 4px; }
+
+    /* Horizontal source bar */
+    .source-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #F1F5F9; }
+    .source-bar > div { height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="max-w-[1500px] mx-auto px-6 py-6" x-data="actionsRegister()" x-init="init()">
+
+    <!-- Header -->
+    <div class="flex items-end justify-between mb-4">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Jira · System of Record</div>
+        <h1 class="text-2xl font-bold text-slate-900 mt-0.5">Governance Actions Register</h1>
+        <p class="text-sm text-slate-600 mt-1">
+          One register. Every management action, project, decision, risk, audit finding and improvement initiative — from every source.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="text-xs font-semibold text-slate-700 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export
+        </button>
+        <button class="text-xs font-semibold text-white px-3 py-2 rounded-lg flex items-center gap-1.5" style="background: var(--tt-navy)">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open in Jira
+        </button>
+      </div>
+    </div>
+
+    <!-- AI-administered banner -->
+    <div class="tt-card p-4 mb-5 flex items-center gap-4" style="background: linear-gradient(90deg, #F0FDFA 0%, #F0F9FF 100%); border-left: 4px solid var(--tt-teal);">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+      </div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">This register is administered by AI</div>
+        <div class="text-xs text-slate-700 mt-0.5">
+          Every ticket was <strong>created</strong>, <strong>enriched</strong>, <strong>reminded</strong> and <strong>escalated</strong> by a Bedrock agent. Human approval remains for material decisions. Provenance is preserved end-to-end — every ticket traces to a source (meeting, email, Teams chat, SharePoint document).
+        </div>
+      </div>
+      <div class="text-xs text-slate-600 text-right flex-shrink-0">
+        <div class="font-semibold text-slate-900">This week</div>
+        <div><span class="font-bold text-teal-700 tt-num-mono" x-text="stats.aiCreatedThisWeek"></span> of <span class="tt-num-mono" x-text="stats.newThisWeek"></span> created by AI</div>
+        <div class="text-slate-500">(<span x-text="Math.round(stats.aiCreatedThisWeek/stats.newThisWeek*100)"></span>%)</div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Total open</div>
+        <div class="text-xl font-bold tt-num-mono text-slate-900 mt-1" x-text="stats.totalOpen"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">New this week</div>
+        <div class="text-xl font-bold tt-num-mono text-slate-900 mt-1" x-text="stats.newThisWeek"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Closed this week</div>
+        <div class="text-xl font-bold tt-num-mono text-green-700 mt-1" x-text="stats.closedThisWeek"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Overdue</div>
+        <div class="text-xl font-bold tt-num-mono text-red-700 mt-1 flex items-baseline gap-2">
+          <span x-text="stats.overdue"></span>
+          <span class="text-xs font-medium text-green-700">▼2 WoW</span>
+        </div>
+      </div>
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">In triage</div>
+        <div class="text-xl font-bold tt-num-mono text-amber-700 mt-1" x-text="stats.triage"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Reminders today</div>
+        <div class="text-xl font-bold tt-num-mono text-teal-700 mt-1" x-text="reminders.length"></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="tt-card p-3 mb-4 flex flex-wrap items-center gap-2 text-xs">
+      <span class="text-slate-500 font-semibold uppercase tracking-wider text-[10px] mr-1">Filter</span>
+      <button @click="toggleFilter('source', src)" x-data-init x-bind:class="filters.source === null ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'" @click="filters.source=null" class="font-semibold px-2 py-1 rounded">All sources</button>
+      <template x-for="s in ['Meeting','Email','Teams','SharePoint']" :key="s">
+        <button @click="filters.source = filters.source === s ? null : s"
+          :class="filters.source === s ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="font-semibold px-2 py-1 rounded flex items-center gap-1.5">
+          <span :class="'source-icon ' + s" x-text="s[0]"></span>
+          <span x-text="s"></span>
+        </button>
+      </template>
+      <div class="w-px h-4 bg-slate-200 mx-1"></div>
+      <template x-for="st in ['Overdue','In Progress','Triage','Done']" :key="st">
+        <button @click="filters.status = filters.status === st ? null : st"
+          :class="filters.status === st ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="font-semibold px-2 py-1 rounded" x-text="st"></button>
+      </template>
+      <div class="w-px h-4 bg-slate-200 mx-1"></div>
+      <template x-for="p in ['Critical','High','Medium','Low']" :key="p">
+        <button @click="filters.priority = filters.priority === p ? null : p"
+          :class="filters.priority === p ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'"
+          class="font-semibold px-2 py-1 rounded" x-text="p"></button>
+      </template>
+      <button @click="clearFilters()" x-show="filters.source || filters.status || filters.priority" class="text-teal-700 hover:text-teal-900 ml-2 font-semibold">Clear</button>
+      <div class="flex-1"></div>
+      <span class="text-slate-500">Showing <span class="font-semibold text-slate-800" x-text="filteredActions.length"></span> of <span class="font-semibold text-slate-800" x-text="allActions.length"></span></span>
+    </div>
+
+    <!-- Two-column layout: register on left, AI panel on right -->
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- Actions table -->
+      <div class="col-span-12 lg:col-span-8">
+        <div class="tt-card overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="text-left px-3 py-2 w-24">Key</th>
+                <th class="text-left px-3 py-2">Summary</th>
+                <th class="text-left px-3 py-2 w-8">Src</th>
+                <th class="text-left px-3 py-2 w-32">Owner</th>
+                <th class="text-left px-3 py-2 w-20">Due</th>
+                <th class="text-left px-3 py-2 w-16">Pri</th>
+                <th class="text-left px-3 py-2 w-24">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <template x-for="a in filteredActions" :key="a.draftJira.key">
+                <template>
+                  <tr class="expandable-row" :class="expanded === a.draftJira.key ? 'expanded' : ''" @click="expanded = expanded === a.draftJira.key ? null : a.draftJira.key">
+                    <td class="px-3 py-2 font-mono text-[11px] text-slate-500" x-text="a.draftJira.key"></td>
+                    <td class="px-3 py-2 text-slate-800" x-text="a.draftJira.summary"></td>
+                    <td class="px-3 py-2">
+                      <span :class="'source-icon ' + a.sourceType" :title="a.sourceType" x-text="a.sourceType[0]"></span>
+                    </td>
+                    <td class="px-3 py-2 text-slate-700 text-xs" x-text="a.ownerCandidate"></td>
+                    <td class="px-3 py-2 text-xs" :class="a.status === 'Overdue' ? 'text-red-700 font-semibold' : 'text-slate-600'" x-text="a.dueLabel"></td>
+                    <td class="px-3 py-2">
+                      <span class="tt-pill" :class="{
+                        'tt-pill-red': a.priority === 'Critical' || a.priority === 'High',
+                        'tt-pill-amber': a.priority === 'Medium',
+                        'tt-pill-grey': a.priority === 'Low'
+                      }" x-text="a.priority[0]"></span>
+                    </td>
+                    <td class="px-3 py-2 text-xs">
+                      <span class="tt-pill" :class="{
+                        'tt-pill-red':   a.status === 'Overdue',
+                        'tt-pill-blue':  a.status === 'In Progress',
+                        'tt-pill-amber': a.status === 'Triage',
+                        'tt-pill-green': a.status === 'Done'
+                      }" x-text="a.status.toUpperCase()"></span>
+                    </td>
+                  </tr>
+                  <tr class="detail-row" x-show="expanded === a.draftJira.key" x-cloak>
+                    <td colspan="7">
+                      <div class="detail-inner">
+                        <div class="grid grid-cols-12 gap-4">
+                          <div class="col-span-8">
+                            <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Source citation</div>
+                            <div class="text-xs text-slate-700 mb-3" x-text="a.sourceCitation"></div>
+
+                            <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Description (agent-authored)</div>
+                            <div class="text-xs text-slate-700 bg-white border border-slate-200 rounded p-2 mb-3">
+                              <p x-text="a.text"></p>
+                              <p class="mt-1"><em>Extracted from:</em> "<span x-text="a.sourceQuote || (a.sourceCitation.split('· ').pop())"></span>"</p>
+                              <p class="mt-1 text-slate-500"><em>Priority rationale:</em> <span x-text="a.priorityRationale || 'n/a'"></span></p>
+                            </div>
+
+                            <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Agent activity on this ticket</div>
+                            <ul class="text-xs text-slate-700 space-y-1">
+                              <li class="flex items-start gap-2">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;">JA</div>
+                                <div><strong>Created</strong> · <span class="text-slate-500" x-text="a.sourceForum + ' · agent JA · confidence ' + (a.confidenceGrade || 'A')"></span></div>
+                              </li>
+                              <li class="flex items-start gap-2" x-show="a.linkedRisk">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#DC2626,#B91C1C);">RA</div>
+                                <div><strong>Linked</strong> to Risk <span class="font-mono" x-text="a.linkedRisk"></span> · <span class="text-slate-500">agent AR</span></div>
+                              </li>
+                              <li class="flex items-start gap-2" x-show="a.dedup">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#2563EB,#1D4ED8);">DD</div>
+                                <div><strong x-text="a.dedup && a.dedup.type === 'auto-link' ? 'Auto-linked' : 'Related'"></strong> to <span class="font-mono" x-text="a.dedup ? a.dedup.ticket : ''"></span> · <span class="text-slate-500" x-text="a.dedup ? a.dedup.reason : ''"></span></div>
+                              </li>
+                              <li class="flex items-start gap-2" x-show="a.status === 'In Progress'">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;">JA</div>
+                                <div><strong>Reminder scheduled</strong> · T-3 / T-1 / T+0 via Teams DM to <span x-text="a.ownerCandidate"></span></div>
+                              </li>
+                              <li class="flex items-start gap-2" x-show="a.status === 'Overdue'">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#DC2626,#7F1D1D);">JA</div>
+                                <div class="text-red-700"><strong>Escalated</strong> to line manager (T+7 rule) · <span class="text-slate-500">last chase 07:12 today</span></div>
+                              </li>
+                              <li class="flex items-start gap-2" x-show="a.status === 'Done'">
+                                <div class="tt-agent-avatar" style="width:20px;height:20px;font-size:9px;background:linear-gradient(135deg,#16A34A,#166534);">✓</div>
+                                <div class="text-green-700"><strong>Verified</strong> and closed · evidence attached</div>
+                              </li>
+                            </ul>
+                          </div>
+                          <div class="col-span-4">
+                            <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Metadata</div>
+                            <div class="text-xs space-y-1 text-slate-600">
+                              <div><span class="text-slate-500">Type:</span> <span class="text-slate-800 font-medium" x-text="a.draftJira.type"></span></div>
+                              <div><span class="text-slate-500">Project:</span> <span class="text-slate-800 font-medium" x-text="a.draftJira.project"></span></div>
+                              <div><span class="text-slate-500">Confidence:</span> <span class="font-medium" :class="a.confidenceGrade === 'A' ? 'text-teal-700' : 'text-amber-700'">Grade <span x-text="a.confidenceGrade || 'A'"></span></span></div>
+                              <div class="mt-2">
+                                <span class="text-slate-500">Labels:</span>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                  <template x-for="l in a.draftJira.labels" :key="l">
+                                    <span class="text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded font-mono" x-text="l"></span>
+                                  </template>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5 mt-3">
+                              <a href="#" class="text-[11px] font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Open in Jira</a>
+                              <a href="#" class="text-[11px] font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1"><i data-lucide="link" class="w-3 h-3"></i> View source in <span x-text="a.sourceType"></span></a>
+                              <a href="ask.html" class="text-[11px] font-semibold text-teal-700 hover:text-teal-900 flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3"></i> Ask the Tower about this</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </template>
+              <tr x-show="filteredActions.length === 0">
+                <td colspan="7" class="text-center text-slate-500 py-8 text-sm">No actions match the current filters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right-hand AI panel -->
+      <aside class="col-span-12 lg:col-span-4 space-y-4">
+
+        <!-- Insights -->
+        <div class="tt-card p-4">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">AI Insights on the Register</div>
+
+          <!-- Source distribution -->
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-slate-700 mb-1">Where actions come from</div>
+            <div class="source-bar mb-1.5">
+              <div :style="`width: ${insights.sourcePct.Meeting}%; background: #0B1F3A;`" :title="`Meetings ${insights.sourcePct.Meeting}%`"></div>
+              <div :style="`width: ${insights.sourcePct.Email}%; background: #64748B;`" :title="`Email ${insights.sourcePct.Email}%`"></div>
+              <div :style="`width: ${insights.sourcePct.Teams}%; background: #4B53BC;`" :title="`Teams ${insights.sourcePct.Teams}%`"></div>
+              <div :style="`width: ${insights.sourcePct.SharePoint}%; background: #0F766E;`" :title="`SharePoint ${insights.sourcePct.SharePoint}%`"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-500">
+              <div><span class="source-icon Meeting mr-1" style="width:8px;height:8px;"></span>Meetings <span class="font-semibold text-slate-800" x-text="insights.sourcePct.Meeting + '%'"></span></div>
+              <div><span class="source-icon Email mr-1" style="width:8px;height:8px;"></span>Email <span class="font-semibold text-slate-800" x-text="insights.sourcePct.Email + '%'"></span></div>
+              <div><span class="source-icon Teams mr-1" style="width:8px;height:8px;"></span>Teams <span class="font-semibold text-slate-800" x-text="insights.sourcePct.Teams + '%'"></span></div>
+              <div><span class="source-icon SharePoint mr-1" style="width:8px;height:8px;"></span>SharePoint <span class="font-semibold text-slate-800" x-text="insights.sourcePct.SharePoint + '%'"></span></div>
+            </div>
+          </div>
+
+          <!-- Top themes -->
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-slate-700 mb-1">Themes (LLM-clustered)</div>
+            <div class="space-y-1.5">
+              <template x-for="t in insights.themes" :key="t.name">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 text-xs text-slate-700" x-text="t.name"></div>
+                  <div class="text-xs font-semibold tt-num-mono text-slate-900 w-8 text-right" x-text="t.count"></div>
+                  <div class="w-24 tt-bar">
+                    <div class="tt-bar-fill" :class="t.color" :style="`width: ${t.pct}%`"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Portfolio forecast -->
+          <div class="mb-3">
+            <div class="text-xs font-semibold text-slate-700 mb-1">Portfolio Agent forecast</div>
+            <div class="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded p-2">
+              <div class="mb-1"><i data-lucide="triangle-alert" class="w-3 h-3 inline text-amber-600"></i> <span class="font-semibold text-slate-800">3 tickets at risk of slipping</span></div>
+              <ul class="text-[11px] space-y-0.5 mt-1">
+                <li><span class="font-mono">GOV-402</span> · Payments recovery plan · 78% probability of slip</li>
+                <li><span class="font-mono">GOV-403</span> · DORA Q3 funding release · 62% probability</li>
+                <li><span class="font-mono">RSK-201</span> · Third-party concentration plan · 55% probability</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tt-ai-footer">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            Portfolio + Correlation Agents · Llama 3.3 70B · updated 06:15 today
+          </div>
+        </div>
+
+        <!-- Agent activity feed -->
+        <div class="tt-card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Agent Activity · Last 12h</div>
+            <span class="text-[10px] text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block mr-1 animate-pulse"></span> Live</span>
+          </div>
+          <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <template x-for="ev in activity" :key="ev.time + ev.action">
+              <div class="flex items-start gap-2 text-xs">
+                <div class="tt-agent-avatar flex-shrink-0" style="width:22px;height:22px;font-size:9px;" x-text="ev.initials"></div>
+                <div class="min-w-0">
+                  <div class="text-slate-700" x-text="ev.action"></div>
+                  <div class="text-[10px] text-slate-400 mt-0.5"><span class="font-semibold" x-text="ev.agent"></span> Agent · <span x-text="ev.time"></span></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Reminders queue -->
+        <div class="tt-card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Reminders Queue · Today</div>
+            <span class="text-[10px] text-slate-500"><span class="tt-pill tt-pill-teal" x-text="reminders.length + ' scheduled'"></span></span>
+          </div>
+          <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <template x-for="r in reminders" :key="r.time + r.target">
+              <div class="tt-mini-card">
+                <div class="tt-mini-card-head">
+                  <div class="w-4 h-4 rounded bg-purple-100 flex items-center justify-center">
+                    <i :data-lucide="r.channel === 'Email' ? 'mail' : 'message-square'" class="w-2.5 h-2.5" style="color: #464775"></i>
+                  </div>
+                  <span x-text="r.channel"></span>
+                  <span class="ml-auto text-slate-400" x-text="r.time"></span>
+                </div>
+                <div class="text-[11px] text-slate-500 mb-0.5">
+                  To <span class="font-semibold text-slate-700" x-text="r.to"></span> · <span class="font-mono" x-text="r.target"></span> · <span class="tt-pill tt-pill-grey" x-text="r.rule"></span>
+                </div>
+                <div class="text-[11px] text-slate-700 italic" x-text="'"' + r.message + '"'"></div>
+              </div>
+            </template>
+          </div>
+          <div class="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            All reminders drafted by Jira Admin Agent · human oversight through weekly reminder-config review
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+    <footer class="text-center text-xs text-slate-500 py-6">
+      Governance Actions Register · Sourced from meetings, email, Teams, SharePoint · Administered by AI · Jira as system of record
+    </footer>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script src="data/meetings/index.js"></script>
+  <script src="data/meetings/cyber-manco-2026-07-08.js"></script>
+  <script src="data/meetings/arb-2026-07-09.js"></script>
+  <script src="data/meetings/risk-manco-2026-07-10.js"></script>
+  <script src="data/meetings/service-manco-2026-07-11.js"></script>
+  <script src="data/meetings/steerco-2026-07-14.js"></script>
+  <script src="data/actions-non-meeting.js"></script>
+  <script>
+    renderTopNav('actions');
+
+    function actionsRegister() {
+      return {
+        allActions: [],
+        filters: { source: null, status: null, priority: null },
+        expanded: null,
+        activity: window.AGENT_ACTIVITY,
+        reminders: window.REMINDERS_TODAY,
+
+        get filteredActions() {
+          return this.allActions.filter(a => {
+            if (this.filters.source && a.sourceType !== this.filters.source) return false;
+            if (this.filters.status && a.status !== this.filters.status) return false;
+            if (this.filters.priority && a.priority !== this.filters.priority) return false;
+            return true;
+          });
+        },
+
+        get stats() {
+          const total = this.allActions.length;
+          const open = this.allActions.filter(a => a.status !== 'Done').length;
+          const overdue = this.allActions.filter(a => a.status === 'Overdue').length;
+          const triage = this.allActions.filter(a => a.status === 'Triage').length;
+          // "This week" = tickets created after 8 Jul (any of our meeting or non-meeting sources, excluding legacy)
+          const newThisWeek = this.allActions.filter(a => !a.draftJira.labels.includes('legacy')).length;
+          const closedThisWeek = this.allActions.filter(a => a.status === 'Done').length;
+          return {
+            totalOpen: open,
+            newThisWeek: newThisWeek,
+            closedThisWeek: closedThisWeek,
+            overdue: overdue,
+            triage: triage,
+            aiCreatedThisWeek: newThisWeek  // all ticket creation went through AI in the demo
+          };
+        },
+
+        get insights() {
+          const counts = { Meeting: 0, Email: 0, Teams: 0, SharePoint: 0 };
+          this.allActions.forEach(a => counts[a.sourceType] = (counts[a.sourceType] || 0) + 1);
+          const total = this.allActions.length || 1;
+          return {
+            sourcePct: {
+              Meeting: Math.round(counts.Meeting/total*100),
+              Email:   Math.round(counts.Email/total*100),
+              Teams:   Math.round(counts.Teams/total*100),
+              SharePoint: Math.round(counts.SharePoint/total*100)
+            },
+            themes: [
+              { name: 'PaymentGate vendor',       count: 12, pct: 100, color: 'red'   },
+              { name: 'DORA readiness',           count:  8, pct:  67, color: 'amber' },
+              { name: 'Cloud budget & FinOps',    count:  6, pct:  50, color: 'amber' },
+              { name: 'Wealth Digital Go-Live',   count:  4, pct:  33, color: 'green' },
+              { name: 'Data Platform Go-Live',    count:  3, pct:  25, color: 'green' },
+              { name: 'MFA legacy coverage',      count:  3, pct:  25, color: 'blue'  }
+            ]
+          };
+        },
+
+        toggleFilter(kind, val) { this.filters[kind] = this.filters[kind] === val ? null : val; },
+        clearFilters()          { this.filters = { source: null, status: null, priority: null }; },
+
+        init() {
+          const collected = [];
+          Object.values(window.MEETINGS_BY_ID || {}).forEach(m => {
+            m.processed.actions.forEach(a => {
+              collected.push({
+                ...a,
+                sourceType: 'Meeting',
+                sourceForum: m.forumShort,
+                sourceForumColor: m.forumColor,
+                sourceMeetingId: m.id,
+                sourceCitation: 'Meeting · ' + m.forum + ' · ' + m.dateLabel + ' · Item ' + (a.sourceItem || '?')
+              });
+            });
+          });
+          (window.NON_MEETING_ACTIONS || []).forEach(a => collected.push(a));
+          // Attach status
+          collected.forEach(a => {
+            a.status = (window.ACTIONS_STATUS || {})[a.draftJira.key] || 'In Progress';
+          });
+          // Sort: Overdue first, then by dueDate ascending
+          const statusOrder = { 'Overdue': 0, 'Triage': 1, 'In Progress': 2, 'Done': 3 };
+          collected.sort((x, y) => {
+            const so = (statusOrder[x.status] ?? 4) - (statusOrder[y.status] ?? 4);
+            if (so !== 0) return so;
+            return (x.dueDate || '').localeCompare(y.dueDate || '');
+          });
+          this.allActions = collected;
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

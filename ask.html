@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ask the Tower · Technology Management Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+  <style>
+    /* Chat container fills viewport minus topbar */
+    .chat-shell { height: calc(100vh - 64px); }
+
+    /* Chat bubbles */
+    .bubble-user  { background: var(--tt-navy); color: white; padding: 10px 14px; border-radius: 16px 16px 4px 16px; max-width: 78%; margin-left: auto; }
+    .bubble-agent { background: white; color: var(--tt-ink); padding: 14px 16px; border-radius: 16px 16px 16px 4px; max-width: 92%; border: 1px solid var(--tt-border); box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
+    .bubble-agent code { background: #F1F5F9; padding: 1px 4px; border-radius: 3px; font-size: 90%; }
+
+    /* Thinking dots */
+    .thinking-bubble { display: inline-flex; align-items: center; gap: 8px; background: white; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--tt-border); }
+    .thinking-dot { width: 6px; height: 6px; border-radius: 999px; background: var(--tt-teal); animation: tt-bounce-2 1.2s infinite ease-in-out; }
+    .thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+    .thinking-dot:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes tt-bounce-2 { 0%,80%,100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+    /* Paragraph reveal (progressive) */
+    .reveal-para { opacity: 0; transform: translateY(4px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .reveal-para.visible { opacity: 1; transform: none; }
+
+    /* Sidebar prompt row */
+    .prompt-row { display: block; padding: 6px 10px; border-radius: 6px; font-size: 12px; color: #334155; cursor: pointer; text-align: left; width: 100%; border: 1px solid transparent; transition: all 0.1s ease; }
+    .prompt-row:hover { background: #F8FAFC; border-color: var(--tt-border); color: #0F172A; }
+    .prompt-row:hover .prompt-arrow { color: var(--tt-teal); transform: translateX(2px); }
+    .prompt-arrow { color: transparent; transition: transform 0.15s ease, color 0.15s ease; }
+
+    /* Citation chip */
+    .cite-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #0F766E; background: #F0FDFA; border: 1px solid #99F6E4; padding: 2px 8px; border-radius: 999px; margin: 2px 4px 2px 0; text-decoration: none; }
+    .cite-chip:hover { background: #CCFBF1; }
+
+    /* Follow-up chip */
+    .followup-chip { display: inline-block; font-size: 12px; color: var(--tt-navy); background: white; border: 1px solid var(--tt-border); padding: 6px 12px; border-radius: 999px; margin: 4px 6px 0 0; cursor: pointer; }
+    .followup-chip:hover { background: #F1F5F9; border-color: #94A3B8; }
+
+    /* Category header */
+    .cat-header { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #64748B; padding: 8px 10px 4px; margin-top: 6px; }
+
+    /* Live-mode toggle */
+    .toggle-track { width: 32px; height: 18px; background: #CBD5E1; border-radius: 999px; position: relative; cursor: pointer; transition: background 0.15s ease; }
+    .toggle-track.on { background: var(--tt-teal); }
+    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: white; border-radius: 999px; transition: left 0.15s ease; }
+    .toggle-track.on .toggle-thumb { left: 16px; }
+  </style>
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="chat-shell max-w-[1500px] mx-auto grid grid-cols-12" x-data="askTower()" x-init="init()">
+
+    <!-- SIDEBAR -->
+    <aside class="col-span-12 lg:col-span-3 border-r border-slate-200 bg-white flex flex-col h-full">
+      <div class="p-4 border-b border-slate-100">
+        <div class="text-sm font-semibold text-slate-900">Ask the Tower</div>
+        <div class="text-xs text-slate-500 mt-0.5">Powered by Llama 3.3 70B on AWS Bedrock</div>
+      </div>
+
+      <!-- Live mode -->
+      <div class="p-3 border-b border-slate-100 bg-slate-50">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+            Live Mode <span class="text-slate-400 font-normal" x-text="liveMode ? '· ON' : '· OFF'"></span>
+          </div>
+          <div :class="'toggle-track ' + (liveMode ? 'on' : '')" @click="toggleLiveMode()">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+        <div class="text-[11px] text-slate-500 leading-snug" x-show="!liveMode">Uses cached Llama 3.3 70B answers. Zero setup, always works — safe for exec demo.</div>
+        <div class="text-[11px] text-teal-700 leading-snug" x-show="liveMode && !groqKey"><em>Click again to set your Groq API key.</em></div>
+        <div class="text-[11px] text-teal-700 leading-snug" x-show="liveMode && groqKey">Freeform questions hit Groq directly · key stored locally only.</div>
+      </div>
+
+      <!-- Prompt library -->
+      <div class="flex-1 overflow-y-auto py-2">
+        <template x-for="group in promptGroups" :key="group.name">
+          <div>
+            <div class="cat-header" x-text="group.name"></div>
+            <template x-for="p in group.prompts" :key="p.id">
+              <button class="prompt-row flex items-start gap-2" @click="askById(p.id)">
+                <span class="flex-1" x-text="p.label"></span>
+                <span class="prompt-arrow flex-shrink-0 mt-0.5">→</span>
+              </button>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <!-- Recent chats stub -->
+      <div class="border-t border-slate-100 p-3 text-xs">
+        <div class="cat-header" style="padding: 0 0 4px;">Recent</div>
+        <div class="text-slate-500 leading-tight">
+          <div class="py-1 truncate">MANCO paper on Payments recovery ·<span class="text-slate-400"> Fri</span></div>
+          <div class="py-1 truncate">Vendor concentration board deck ·<span class="text-slate-400"> Thu</span></div>
+          <div class="py-1 truncate">Q3 FinOps executive summary ·<span class="text-slate-400"> Wed</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CHAT AREA -->
+    <section class="col-span-12 lg:col-span-9 flex flex-col bg-slate-50 h-full">
+
+      <!-- Header strip -->
+      <div class="bg-white border-b border-slate-100 px-6 py-3 flex items-center gap-3 flex-shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-navy-900 flex items-center justify-center" style="background: linear-gradient(135deg, #02C39A, #0B1F3A);">
+          <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-slate-900">Executive Reporting Agent</div>
+          <div class="text-[11px] text-slate-500 flex items-center gap-2">
+            <span><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block mr-1"></span> Online</span>
+            <span>·</span>
+            <span>Grounded on 5 forums · 40 tickets · SharePoint · Teams · Outlook · Confluence</span>
+          </div>
+        </div>
+        <button @click="clearChat()" class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5">
+          <i data-lucide="refresh-ccw" class="w-3 h-3"></i> New chat
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div class="flex-1 overflow-y-auto px-6 py-6 space-y-4" x-ref="scroller">
+
+        <!-- Welcome -->
+        <div class="flex justify-start" x-show="messages.length === 0">
+          <div class="bubble-agent">
+            <div class="text-sm text-slate-800">
+              Good morning, Ravi. I'm your Executive Reporting Agent. I've read the last 30 days of governance meetings, emails to the shared secretariat mailboxes, monitored governance Teams channels, and every document in the governance SharePoint sites.
+            </div>
+            <div class="text-sm text-slate-800 mt-2">
+              Ask me anything about programme delivery, risks, cloud, DORA, PaymentGate, cross-forum themes, or specific tickets. Every answer is cited to source. Try one of the prompts on the left, or type your own.
+            </div>
+            <div class="tt-ai-footer">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              Ready · <span x-text="liveMode ? 'Live · Groq Llama 3.3 70B' : 'Cached responses · demo mode'"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages loop -->
+        <template x-for="msg in messages" :key="msg.id">
+          <div>
+            <template x-if="msg.role === 'user'">
+              <div class="flex justify-end">
+                <div class="bubble-user text-sm" x-text="msg.text"></div>
+              </div>
+            </template>
+            <template x-if="msg.role === 'agent'">
+              <div class="flex justify-start">
+                <div class="bubble-agent w-full max-w-3xl">
+                  <div class="text-sm text-slate-800" x-html="msg.html"></div>
+                  <template x-if="msg.citations && msg.citations.length">
+                    <div class="mt-3">
+                      <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Sources</div>
+                      <div class="flex flex-wrap">
+                        <template x-for="c in msg.citations" :key="c.label">
+                          <a :href="c.href" class="cite-chip">
+                            <i data-lucide="link" class="w-2.5 h-2.5"></i>
+                            <span x-text="c.label"></span>
+                          </a>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="msg.followUps && msg.followUps.length">
+                    <div class="mt-3">
+                      <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">You might ask next</div>
+                      <template x-for="f in msg.followUps" :key="f.id">
+                        <button class="followup-chip" @click="askById(f.id)" x-text="f.label"></button>
+                      </template>
+                    </div>
+                  </template>
+                  <div class="tt-ai-footer" x-show="msg.meta">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i>
+                    <span x-text="msg.meta.model"></span> ·
+                    <span x-text="(msg.meta.latencyMs/1000).toFixed(2) + 's'"></span> ·
+                    <span x-text="'tokens ' + msg.meta.tokensIn + '→' + msg.meta.tokensOut"></span> ·
+                    <span class="font-semibold text-slate-700">Confidence <span x-text="msg.meta.confidence"></span></span>
+                    <span class="ml-auto text-slate-400 text-[10px]" x-text="msg.meta.sourceMode || ''"></span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Thinking indicator -->
+        <div class="flex justify-start" x-show="pending" x-cloak>
+          <div class="thinking-bubble">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <span class="text-xs text-slate-500 ml-1" x-text="pendingStage"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="bg-white border-t border-slate-200 px-6 py-4 flex-shrink-0">
+        <form @submit.prevent="askFreeText()" class="flex items-end gap-3">
+          <div class="flex-1">
+            <textarea
+              x-model="input"
+              @keydown.enter.prevent="askFreeText()"
+              placeholder="Ask the Tower anything about your governance, programmes, risks, or cloud..."
+              rows="1"
+              class="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:bg-white resize-none"
+            ></textarea>
+          </div>
+          <button type="submit"
+            :disabled="!input.trim() || pending"
+            :class="input.trim() && !pending ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-200 cursor-not-allowed'"
+            class="text-white text-sm font-semibold px-4 py-2.5 rounded-lg flex items-center gap-1.5">
+            <i data-lucide="send-horizontal" class="w-4 h-4"></i>
+            Send
+          </button>
+        </form>
+        <div class="text-[10px] text-slate-500 mt-2 flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-3 h-3"></i>
+          Data stays in your tenant · PII redacted · every answer cited · retention 30 days · full audit trail
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script src="data/llama-responses.js"></script>
+  <script>
+    renderTopNav('ask');
+
+    function askTower() {
+      return {
+        messages: [],
+        input: '',
+        pending: false,
+        pendingStage: 'Thinking...',
+        promptGroups: window.PROMPT_GROUPS,
+        liveMode: localStorage.getItem('tt-live-mode') === 'true',
+        groqKey: localStorage.getItem('tt-groq-key') || '',
+        nextId: 1,
+
+        init() {
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+
+        clearChat() {
+          this.messages = [];
+        },
+
+        toggleLiveMode() {
+          if (!this.liveMode) {
+            // Turning on — need a key
+            const existing = localStorage.getItem('tt-groq-key');
+            let key = existing;
+            if (!existing) {
+              key = prompt('Enable Live Mode?\\n\\nPaste a Groq API key (free from console.groq.com).\\nIt will be stored in your browser localStorage only and sent directly to api.groq.com. Never to any other server.\\n\\nLeave blank to cancel.');
+              if (!key) return;
+              localStorage.setItem('tt-groq-key', key.trim());
+            }
+            this.groqKey = key;
+            this.liveMode = true;
+            localStorage.setItem('tt-live-mode', 'true');
+          } else {
+            this.liveMode = false;
+            localStorage.setItem('tt-live-mode', 'false');
+          }
+        },
+
+        async askById(id) {
+          const qa = window.LLAMA_QA[id];
+          if (!qa) return;
+          await this.sendUser(qa.question);
+          await this.simulateAgent(qa);
+        },
+
+        async askFreeText() {
+          const q = this.input.trim();
+          if (!q || this.pending) return;
+          this.input = '';
+          await this.sendUser(q);
+
+          // Try to match against the QA library first
+          const matched = this.matchQuestion(q);
+          if (matched) {
+            await this.simulateAgent(window.LLAMA_QA[matched]);
+            return;
+          }
+
+          // Live mode with key → call Groq
+          if (this.liveMode && this.groqKey) {
+            await this.callGroq(q);
+            return;
+          }
+
+          // Otherwise → helpful fallback
+          await this.simulateAgent(this.fallbackResponse(q));
+        },
+
+        async sendUser(text) {
+          this.messages.push({ id: this.nextId++, role: 'user', text });
+          await this.$nextTick();
+          this.scrollBottom();
+        },
+
+        async simulateAgent(qa) {
+          this.pending = true;
+          this.pendingStage = 'Retrieving from knowledge graph...';
+          this.scrollBottom();
+          await this.wait(500);
+          this.pendingStage = 'Calling ' + (qa.meta ? qa.meta.model : 'Llama 3.3 70B') + '...';
+          await this.wait(Math.min(qa.meta ? qa.meta.latencyMs : 1200, 2200));
+          this.pendingStage = 'Formatting response...';
+          await this.wait(250);
+          this.pending = false;
+
+          this.messages.push({
+            id: this.nextId++,
+            role: 'agent',
+            html: qa.answerHtml,
+            citations: qa.citations || [],
+            followUps: (qa.followUpIds || []).map(fid => window.LLAMA_QA[fid]
+              ? { id: fid, label: window.LLAMA_QA[fid].question }
+              : null).filter(Boolean),
+            meta: Object.assign({ sourceMode: this.liveMode ? 'live (matched cache)' : 'cached' }, qa.meta || {})
+          });
+          await this.$nextTick();
+          if (window.lucide) window.lucide.createIcons();
+          this.scrollBottom();
+        },
+
+        matchQuestion(q) {
+          const norm = q.toLowerCase();
+          const keywords = {
+            'themes-6-meetings':      ['theme','recurring','pattern','across'],
+            'paymentgate-actions':    ['paymentgate','payment gate','action linked','tickets linked'],
+            'silent-risks':           ['silent','hidden','unlogged','not in gr'],
+            'payments-red':           ['payments red','why is payments','payments amber','payments modernisation'],
+            'slipping-actions':       ['slip','at risk','forecast','delay','miss'],
+            'dora-status':            ['dora','regulatory','regulation','digital operational'],
+            'who-owns-concentration': ['who owns','owner','third-party','concentration'],
+            'emerging-risks':         ['emerging','new risk','30 days','recently'],
+            'cloud-variance':         ['cloud spend','budget','variance','over plan','finops','overrun'],
+            'savings-opportunities':  ['saving','optim','reduce cost','waste','rightsize'],
+            'top-3-cio':              ['top 3','focus','priority','this week','what should i'],
+            'draft-manco-paper-dora': ['draft','paper','manco','dora','write me'],
+            'steerco-decided-payments': ['what did steerco','steerco decision','payments decision']
+          };
+          for (const [id, kws] of Object.entries(keywords)) {
+            const matches = kws.filter(kw => norm.includes(kw)).length;
+            if (matches >= (kw => kw.length > 15 ? 1 : 2)(kws.join(''))) {
+              if (matches >= 2 || kws.some(kw => norm.includes(kw) && kw.length >= 6)) return id;
+            }
+          }
+          return null;
+        },
+
+        fallbackResponse(q) {
+          return {
+            answerHtml: `
+              <p>I don't have a cached response for that specific question, but here's how I'd answer it in production:</p>
+              <ol class="mt-3 space-y-1 text-sm">
+                <li>1. Retrieve relevant items from the Neptune knowledge graph and OpenSearch (documents, tickets, minutes).</li>
+                <li>2. Ground the response in specific citations · confidence graded A/B/C.</li>
+                <li>3. Return with source chips you can click through to source-of-truth.</li>
+              </ol>
+              <p class="mt-3 text-sm text-slate-700">
+                <strong>To make this a working live answer:</strong> toggle <em>Live Mode</em> in the sidebar and supply a free Groq API key from <a href="https://console.groq.com" class="text-teal-700 underline" target="_blank">console.groq.com</a>. The demo will then hit Llama 3.3 70B directly for freeform questions.
+              </p>
+              <p class="mt-3 text-sm text-slate-700">Or try one of these pre-cached questions:</p>
+              <ul class="text-sm ml-4 mt-1 space-y-0.5 text-teal-700">
+                <li>• <em>What are the recurring themes across the last 6 governance meetings?</em></li>
+                <li>• <em>Why is Payments Modernisation red?</em></li>
+                <li>• <em>Top 3 things I should focus on this week</em></li>
+              </ul>
+            `,
+            citations: [],
+            followUpIds: ['themes-6-meetings','payments-red','top-3-cio'],
+            meta: { model: 'Demo fallback', latencyMs: 400, tokensIn: 0, tokensOut: 0, confidence: 'B' }
+          };
+        },
+
+        async callGroq(q) {
+          this.pending = true;
+          this.pendingStage = 'Calling Groq · Llama 3.3 70B (live)...';
+          try {
+            const started = Date.now();
+            const systemPrompt = 'You are the Executive Reporting Agent of the Northwind Technology Management Tower — a fictional demo company. You have access (in-context) to the last 6 days of governance meetings across Cyber MANCO, ARB, Risk MANCO, Service MANCO and SteerCo. Answer concisely, in professional executive tone, in HTML with <p>, <ul>, <ol>, <strong>, <em>, <code>. Cite sources as [Forum · date]. Never invent tickets or IDs — say "I would need to check X" if uncertain. Keep responses under 250 words.';
+            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.groqKey
+              },
+              body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: q }
+                ],
+                temperature: 0.3,
+                max_tokens: 700
+              })
+            });
+            if (!res.ok) throw new Error('Groq API returned ' + res.status);
+            const data = await res.json();
+            const answer = data.choices?.[0]?.message?.content || '(empty response)';
+            const latency = Date.now() - started;
+            this.pending = false;
+            this.messages.push({
+              id: this.nextId++, role: 'agent',
+              html: '<div class="prose prose-sm">' + answer + '</div>',
+              citations: [{ label: 'Live · Groq · Llama 3.3 70B', href: 'https://console.groq.com' }],
+              followUps: [],
+              meta: {
+                model: 'Llama 3.3 70B (LIVE via Groq)',
+                latencyMs: latency,
+                tokensIn: data.usage?.prompt_tokens || 0,
+                tokensOut: data.usage?.completion_tokens || 0,
+                confidence: 'B',
+                sourceMode: 'LIVE'
+              }
+            });
+            await this.$nextTick();
+            if (window.lucide) window.lucide.createIcons();
+            this.scrollBottom();
+          } catch (err) {
+            this.pending = false;
+            this.messages.push({
+              id: this.nextId++, role: 'agent',
+              html: `<p class="text-red-700"><strong>Live-mode call failed:</strong> ${err.message}</p><p class="mt-2 text-sm">Falling back to cached mode. Check your Groq API key or try one of the pre-cached questions.</p>`,
+              citations: [],
+              followUps: [],
+              meta: { model: 'Error', latencyMs: 0, tokensIn: 0, tokensOut: 0, confidence: 'C' }
+            });
+          }
+        },
+
+        wait(ms) { return new Promise(r => setTimeout(r, ms)); },
+        scrollBottom() {
+          this.$nextTick(() => {
+            const s = this.$refs.scroller;
+            if (s) s.scrollTop = s.scrollHeight;
+          });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

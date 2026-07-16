@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technology Management Tower · Executive Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/white.css">
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Override reveal.js theme */
+    :root {
+      --tt-navy: #0B1F3A;
+      --tt-teal: #00A896;
+      --tt-teal-2: #02C39A;
+      --tt-gold: #F0A202;
+      --tt-red: #DC2626;
+      --tt-amber: #F59E0B;
+      --tt-green: #16A34A;
+      --tt-slate: #64748B;
+    }
+
+    .reveal { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; color: #0F172A; }
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 { text-transform: none; letter-spacing: -0.01em; color: var(--tt-navy); font-weight: 800; margin-bottom: 0.3em; }
+    .reveal h1 { font-size: 2.4em; line-height: 1.05; }
+    .reveal h2 { font-size: 1.7em; line-height: 1.1; }
+    .reveal h3 { font-size: 1.1em; }
+    .reveal p, .reveal li { color: #1E293B; }
+    .reveal .caption { font-size: 0.5em; color: var(--tt-slate); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; margin-bottom: 8px; }
+
+    .slide-eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: var(--tt-teal); font-weight: 700; }
+
+    /* Section markers on bottom-right */
+    .slide-num { position: absolute; bottom: 20px; right: 30px; font-size: 12px; color: var(--tt-slate); }
+    .slide-tag { position: absolute; bottom: 20px; left: 30px; font-size: 11px; color: var(--tt-slate); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+
+    /* Cards */
+    .tt-slide-card { background: white; border: 1px solid #E5E9F0; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(15,23,42,0.03); }
+    .tt-slide-card-navy { background: var(--tt-navy); color: white; border-radius: 12px; padding: 24px; }
+    .tt-slide-card-navy h3 { color: white; }
+    .tt-slide-card-teal { background: linear-gradient(135deg, #02C39A 0%, #0B1F3A 120%); color: white; border-radius: 12px; padding: 24px; }
+    .tt-slide-card-teal h3 { color: white; }
+
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+    .pill-teal { background: #CCFBF1; color: #0F766E; }
+    .pill-red  { background: #FEE2E2; color: #B91C1C; }
+    .pill-amber{ background: #FEF3C7; color: #B45309; }
+    .pill-navy { background: #E2E8F0; color: #0F172A; }
+
+    /* Grid layout helpers */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+    /* Agent chip */
+    .agent-chip { background: white; border: 1px solid #E5E9F0; border-radius: 10px; padding: 14px 12px; text-align: left; }
+    .agent-chip .avatar { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #02C39A, #0B1F3A); color: white; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 6px; }
+    .agent-chip .name { font-weight: 700; font-size: 14px; color: #0F172A; }
+    .agent-chip .purpose { font-size: 11px; color: var(--tt-slate); margin-top: 3px; line-height: 1.35; }
+
+    /* Big numbers */
+    .big-num { font-size: 3em; font-weight: 900; line-height: 1; color: var(--tt-navy); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    .big-num-teal { color: var(--tt-teal); }
+    .big-num-red  { color: var(--tt-red); }
+    .big-num-green{ color: var(--tt-green); }
+
+    /* Timeline bar */
+    .phase-bar { height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
+
+    /* Layered arch diagram */
+    .arch-layer { border-radius: 6px; padding: 10px 14px; margin-bottom: 6px; font-size: 13px; font-weight: 600; text-align: center; }
+
+    /* Reveal-specific overrides */
+    .reveal .slides section { text-align: left; padding: 30px 20px; }
+    .reveal .slides section.title-slide { text-align: center; }
+    .reveal ul, .reveal ol { display: block; margin-left: 1em; }
+    .reveal ul li, .reveal ol li { margin-bottom: 4px; }
+    .reveal code { background: #F1F5F9; padding: 1px 6px; border-radius: 4px; font-size: 90%; }
+    .reveal a { color: var(--tt-teal); }
+    .reveal em { color: var(--tt-slate); font-style: italic; }
+    .reveal .slides section .fragment.grow-in { transform: scale(0.9); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+    .reveal .slides section .fragment.grow-in.visible { transform: scale(1); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ================================================================
+         Slide 1 · Title
+         ================================================================ -->
+    <section class="title-slide">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <div class="slide-eyebrow" style="margin-bottom: 24px;">CIO OFFICE · Q3 2026</div>
+        <h1 style="font-size: 3em; margin-bottom: 24px;">AI-Powered<br/>Technology Management Tower</h1>
+        <p style="font-size: 22px; color: #334155; line-height: 1.4; margin-bottom: 40px;">
+          One executive view. One system of record.<br/>
+          Nine specialist agents. Powered by Llama&nbsp;3.3&nbsp;70B on AWS Bedrock.
+        </p>
+        <div class="grid-3" style="max-width: 700px; margin: 40px auto 0;">
+          <div class="tt-slide-card"><div style="font-size: 11px; color: var(--tt-slate); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">FOR</div><div style="font-weight: 700; margin-top: 4px;">MANCO / SteerCo</div></div>
+          <div class="tt-slide-card"><div style="font-size: 11px; color: var(--tt-slate); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">DEMO CO.</div><div style="font-weight: 700; margin-top: 4px;">Northwind Technology</div></div>
+          <div class="tt-slide-card"><div style="font-size: 11px; color: var(--tt-slate); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">DECISION</div><div style="font-weight: 700; margin-top: 4px;">Phase 1 funding</div></div>
+        </div>
+      </div>
+      <div class="slide-tag">Executive Deck</div>
+      <div class="slide-num">1 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 2 · The problem
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">The problem</div>
+      <h2 style="margin-top: 8px; margin-bottom: 24px;">Governance is fragmented, action tracking is manual, and executives are drowning in updates.</h2>
+
+      <div class="grid-2">
+        <div class="tt-slide-card">
+          <h3 style="margin-bottom: 12px;">What happens today</h3>
+          <ul style="font-size: 18px; line-height: 1.6;">
+            <li>SteerCo, MANCO, ARB, TDA, Cyber, Risk, Service — <strong>5+ forums</strong>, each in a different tool</li>
+            <li>Actions live in Word minutes, Excel logs, OneNote, personal notebooks</li>
+            <li>Cross-forum patterns invisible until quarterly deep-dives</li>
+            <li>Weekly exec pack takes <strong>3–5 FTE-days</strong> to prepare</li>
+            <li>30–45% of actions <strong>lost or aged &gt; 30 days</strong></li>
+          </ul>
+        </div>
+        <div class="tt-slide-card-navy">
+          <h3 style="margin-bottom: 12px;">What it costs</h3>
+          <div style="font-size: 16px; line-height: 1.7;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);"><span>Exec reporting effort</span><strong>3–5 FTE-days / cycle</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);"><span>Time to detect cross-portfolio risk</span><strong>4–8 weeks</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);"><span>Decision latency at MANCO</span><strong>2–4 weeks</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);"><span>Cloud waste not actioned</span><strong>15–25% of spend</strong></div>
+            <div style="display: flex; justify-content: space-between;"><span>Audit prep</span><strong>Weeks of fire-drill</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-tag">The problem</div>
+      <div class="slide-num">2 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 3 · The vision (user's three-part framing)
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">The vision</div>
+      <h2 style="margin-top: 8px; margin-bottom: 24px;">Three AI capabilities.</h2>
+
+      <div class="grid-3" style="margin-top: 30px;">
+        <div class="tt-slide-card" style="border-top: 4px solid var(--tt-teal);">
+          <div style="font-size: 40px; font-weight: 900; color: var(--tt-teal); line-height: 1;">1</div>
+          <h3 style="margin-top: 8px;">Source</h3>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">
+            AI reads every source — <strong>meetings, emails, Teams chats, SharePoint documents</strong> — extracts actions, and logs them into Jira automatically.
+          </p>
+        </div>
+        <div class="tt-slide-card" style="border-top: 4px solid var(--tt-navy);">
+          <div style="font-size: 40px; font-weight: 900; color: var(--tt-navy); line-height: 1;">2</div>
+          <h3 style="margin-top: 8px;">Report</h3>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">
+            AI reports on tickets — <strong>updates, status, dashboards, reminders, escalations</strong> — administered end-to-end by specialist agents.
+          </p>
+        </div>
+        <div class="tt-slide-card" style="border-top: 4px solid var(--tt-gold);">
+          <div style="font-size: 40px; font-weight: 900; color: var(--tt-gold); line-height: 1;">3</div>
+          <h3 style="margin-top: 8px;">Analyse</h3>
+          <p style="font-size: 15px; line-height: 1.5; color: #334155;">
+            AI analyses documentation to produce <strong>cross-source insights</strong> for management — themes, risks, decisions, and executive narratives.
+          </p>
+        </div>
+      </div>
+
+      <div class="tt-slide-card-teal" style="margin-top: 26px; text-align: center;">
+        <p style="font-size: 18px; margin: 0;">
+          <strong>Jira is the system of record.</strong> AI-administered end-to-end. Humans decide, agents prepare.
+        </p>
+      </div>
+
+      <div class="slide-tag">The vision</div>
+      <div class="slide-num">3 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 4 · What we're proposing
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">What we're proposing</div>
+      <h2 style="margin-top: 8px; margin-bottom: 24px;">A single Technology Management Tower with three surfaces.</h2>
+
+      <div class="grid-3" style="margin-top: 24px;">
+        <div class="tt-slide-card">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #02C39A, #0B1F3A); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; margin-bottom: 12px;">C</div>
+          <h3>Executive Cockpit</h3>
+          <p style="font-size: 14px; color: #334155;">One page. Health scores, initiatives, actions, risks, cloud, audit, AI-generated recommendations. Every number cited to source.</p>
+        </div>
+        <div class="tt-slide-card">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #0B1F3A; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; margin-bottom: 12px;">J</div>
+          <h3>AI-Administered Jira</h3>
+          <p style="font-size: 14px; color: #334155;">Every action from every source. Auto-drafted tickets. Automated reminders and escalations. Cross-forum linking. HITL for material decisions.</p>
+        </div>
+        <div class="tt-slide-card">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #02C39A; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; margin-bottom: 12px;">?</div>
+          <h3>Ask the Tower</h3>
+          <p style="font-size: 14px; color: #334155;">Natural-language questions in Teams, mobile, dashboard. Cited answers powered by Llama 3.3 70B on AWS Bedrock.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; color: var(--tt-slate); font-size: 14px;">
+        <em>Nothing is deleted. Nothing bypasses human oversight for material decisions. Everything is auditable.</em>
+      </div>
+
+      <div class="slide-tag">Proposal</div>
+      <div class="slide-num">4 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 5 · Architecture at a glance
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">Architecture at a glance</div>
+      <h2 style="margin-top: 8px; margin-bottom: 20px;">Enterprise-grade, portable, private-by-default.</h2>
+
+      <div style="max-width: 800px; margin: 20px auto 0;">
+        <div class="arch-layer" style="background: linear-gradient(90deg, #02C39A, #0B1F3A); color: white;">Executive Experience &nbsp;·&nbsp; Cockpit · Teams "Ask the Tower" · Mobile · Digests</div>
+        <div class="arch-layer" style="background: #0B1F3A; color: white;">Insight &amp; Narrative &nbsp;·&nbsp; Executive Reporting Agent · Health scoring · Recommendations</div>
+        <div class="arch-layer" style="background: #142B4E; color: white;">Specialist Agents (9) &nbsp;·&nbsp; AWS Bedrock · Llama 3.3 70B + Claude 3.5 · AgentCore</div>
+        <div class="arch-layer" style="background: #334155; color: white;">Orchestration &amp; Tools &nbsp;·&nbsp; Supervisor · Tool Registry · HITL Gateway · Guardrails</div>
+        <div class="arch-layer" style="background: #475569; color: white;">Knowledge &amp; Data &nbsp;·&nbsp; Neptune graph · OpenSearch (RAG) · S3 · Redshift</div>
+        <div class="arch-layer" style="background: #64748B; color: white;">Ingestion &amp; Redaction &nbsp;·&nbsp; EventBridge · Graph webhooks · Jira webhooks · Comprehend PII</div>
+        <div class="arch-layer" style="background: #E5E9F0; color: #0F172A;">Sources &nbsp;·&nbsp; M365 (Teams, Outlook, SharePoint) · Jira · Confluence · ServiceNow · FinOps · GRC · EA</div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; color: var(--tt-slate); font-size: 13px;">
+        <em>Every layer serverless-first. Bedrock via PrivateLink. Data stays in-tenant. No training on customer data.</em>
+      </div>
+
+      <div class="slide-tag">Architecture</div>
+      <div class="slide-num">5 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 6 · Nine specialist agents
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">The specialist agents</div>
+      <h2 style="margin-top: 8px; margin-bottom: 20px;">Nine agents. One supervisor. Every action auditable.</h2>
+
+      <div class="grid-3">
+        <div class="agent-chip"><div class="avatar">MI</div><div class="name">Meeting Intelligence</div><div class="purpose">Reads transcripts, minutes and packs → structured decisions, discussions, risks.</div></div>
+        <div class="agent-chip"><div class="avatar">AX</div><div class="name">Action Extraction</div><div class="purpose">Detects commitments from meetings, emails, chats. Assigns owner, due date, priority.</div></div>
+        <div class="agent-chip"><div class="avatar">JA</div><div class="name">Jira Administration</div><div class="purpose">Creates, links, comments, reminds, escalates. Never deletes. Never closes.</div></div>
+      </div>
+      <div class="grid-3" style="margin-top: 12px;">
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #F0A202, #B45309);">PM</div><div class="name">Portfolio Management</div><div class="purpose">Delivery health, dependency map, forecasts, slip probabilities.</div></div>
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #F59E0B, #D97706);">SM</div><div class="name">Service Management</div><div class="purpose">Business service scorecards, problem clustering, SIP tickets.</div></div>
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #06B6D4, #0891B2);">CO</div><div class="name">Cloud Optimisation</div><div class="purpose">Continuous waste detection, run-rate forecast, savings tickets.</div></div>
+      </div>
+      <div class="grid-3" style="margin-top: 12px;">
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #2563EB, #1D4ED8);">AG</div><div class="name">Architecture Governance</div><div class="purpose">Standards compliance, exception register, ARB pre-pack.</div></div>
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #DC2626, #7F1D1D);">AR</div><div class="name">Audit &amp; Risk</div><div class="purpose">Live heatmap, emerging risks, pre-assembled audit evidence.</div></div>
+        <div class="agent-chip"><div class="avatar" style="background: linear-gradient(135deg, #0B1F3A, #000000);">ER</div><div class="name">Executive Reporting</div><div class="purpose">Weekly / monthly / quarterly narratives. Composes MANCO papers.</div></div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; color: var(--tt-slate); font-size: 13px;">
+        <em>Progressive autonomy: launch at L1 "Suggest" → L2 "HITL Approve" → L3 "Auto-execute for safe paths only".</em>
+      </div>
+
+      <div class="slide-tag">Agents</div>
+      <div class="slide-num">6 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 7 · The PaymentGate Story
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">The aha moment</div>
+      <h2 style="margin-top: 8px; margin-bottom: 12px;">One vendor issue. Four forums. Six days. No accountable owner — until the Tower stitched it together.</h2>
+
+      <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: #B91C1C; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">The PaymentGate Story · a real week at Northwind</div>
+      </div>
+
+      <div class="grid-4">
+        <div class="tt-slide-card" style="border-top: 4px solid #DC2626;">
+          <div style="font-size: 11px; color: #B91C1C; font-weight: 700;">CYBER MANCO</div>
+          <div style="font-size: 12px; color: var(--tt-slate);">Wed 8 Jul</div>
+          <div style="font-size: 13px; margin-top: 8px; line-height: 1.4;">R-041 uplifted High→Critical. 3 actions raised.</div>
+        </div>
+        <div class="tt-slide-card" style="border-top: 4px solid #F59E0B;">
+          <div style="font-size: 11px; color: #B45309; font-weight: 700;">RISK MANCO</div>
+          <div style="font-size: 12px; color: var(--tt-slate);">Fri 10 Jul</div>
+          <div style="font-size: 13px; margin-top: 8px; line-height: 1.4;">R-041 ratified. R-NEW-3 concentration added Critical.</div>
+        </div>
+        <div class="tt-slide-card" style="border-top: 4px solid #F59E0B;">
+          <div style="font-size: 11px; color: #B45309; font-weight: 700;">SERVICE MANCO</div>
+          <div style="font-size: 12px; color: var(--tt-slate);">Sat 11 Jul</div>
+          <div style="font-size: 13px; margin-top: 8px; line-height: 1.4;">2 x July P1 both traced to PaymentGate. SIP accelerated.</div>
+        </div>
+        <div class="tt-slide-card" style="border-top: 4px solid #DC2626;">
+          <div style="font-size: 11px; color: #B91C1C; font-weight: 700;">STEERCO</div>
+          <div style="font-size: 12px; color: var(--tt-slate);">Tue 14 Jul</div>
+          <div style="font-size: 13px; margin-top: 8px; line-height: 1.4;">Payments → RED. Exit-clause auth. Recovery plan mandated.</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 20px;">
+        <div class="tt-slide-card-navy">
+          <h3 style="color: white; margin-bottom: 10px;">What a human misses</h3>
+          <p style="font-size: 14px; line-height: 1.5; color: #E2E8F0;">Three different senior leaders — Priya, Sarah, Ravi — were working the <strong>same issue</strong> in three different systems (Jira, email, war-room chat). No one saw the pattern.</p>
+        </div>
+        <div class="tt-slide-card-teal">
+          <h3 style="color: white; margin-bottom: 10px;">What the Tower did</h3>
+          <p style="font-size: 14px; line-height: 1.5;">Linked 12 tickets across 4 forums, drafted a SteerCo decision paper 08:22 Monday, forecast a 78% slip risk on the recovery plan, and briefed the CIO before the meeting.</p>
+        </div>
+      </div>
+
+      <div class="slide-tag">Story</div>
+      <div class="slide-num">7 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 8 · Live demo
+         ================================================================ -->
+    <section class="title-slide" style="background: linear-gradient(135deg, #0B1F3A 0%, #142B4E 100%); color: white;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="slide-eyebrow" style="color: #02C39A; margin-bottom: 32px;">Let's see it work</div>
+        <h1 style="font-size: 3.6em; color: white; margin-bottom: 32px;">Live Demo</h1>
+        <p style="font-size: 22px; color: #CBD5E1; line-height: 1.5; max-width: 640px; margin: 0 auto 40px;">
+          Open the prototype in another tab. We'll walk through Cyber MANCO → agent processing → Jira → correlation → Ask the Tower.
+        </p>
+        <a href="index.html" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #02C39A, #0F766E); color: white; padding: 16px 32px; border-radius: 12px; font-weight: 700; font-size: 18px; text-decoration: none; box-shadow: 0 4px 20px rgba(0,168,150,0.4);">
+          Open the Tower →
+        </a>
+        <div style="margin-top: 40px; font-size: 14px; color: #94A3B8;">
+          8-minute walkthrough · Cockpit → Meeting → Actions → Correlation → Ask
+        </div>
+      </div>
+      <div class="slide-tag" style="color: #64748B;">Demo</div>
+      <div class="slide-num" style="color: #64748B;">8 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 9 · 90-day plan
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">First 90 days</div>
+      <h2 style="margin-top: 8px; margin-bottom: 20px;">Foundation and visible executive wins.</h2>
+
+      <div class="grid-3">
+        <div>
+          <div class="phase-bar" style="background: linear-gradient(90deg, #64748B, #475569);">Month 1 · Foundation</div>
+          <div style="padding: 12px; font-size: 13px; line-height: 1.5;">
+            <p><strong>Landing zone</strong> — AWS Control Tower, Entra ID SSO, Bedrock model access, PrivateLink.</p>
+            <p><strong>Data protection</strong> — DPIA signed, Responsible-AI charter approved.</p>
+            <p><strong>Jira scheme</strong> — GOV / DEC / RSK / AUD / SIP / EAG / FIN / PMO projects.</p>
+            <p><strong>Baseline metrics</strong> — captured before the build starts.</p>
+          </div>
+        </div>
+        <div>
+          <div class="phase-bar" style="background: linear-gradient(90deg, #0B1F3A, #142B4E);">Month 2 · Agents</div>
+          <div style="padding: 12px; font-size: 13px; line-height: 1.5;">
+            <p><strong>Meeting Intelligence Agent</strong> live on MANCO + SteerCo (L2, HITL).</p>
+            <p><strong>Action Extraction Agent</strong> feeding draft tickets to secretariat.</p>
+            <p><strong>Jira Admin Agent</strong> creates governance tickets on approval.</p>
+            <p><strong>HITL Gateway</strong> live in Teams as adaptive cards.</p>
+          </div>
+        </div>
+        <div>
+          <div class="phase-bar" style="background: linear-gradient(90deg, #02C39A, #0F766E);">Month 3 · Visible wins</div>
+          <div style="padding: 12px; font-size: 13px; line-height: 1.5;">
+            <p><strong>Executive Cockpit v0</strong> live — actions register + weekly narrative.</p>
+            <p><strong>First auto-composed weekly pack</strong> delivered to the CIO's inbox on Monday 06:30.</p>
+            <p><strong>Legacy migration</strong> — old action logs pulled into Jira.</p>
+            <p><strong>Go/no-go</strong> for Phase 2.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tt-slide-card" style="margin-top: 16px; background: #F0FDFA; border-color: #99F6E4;">
+        <div style="font-size: 13px;"><strong style="color: #0F766E;">Success criteria at day 90:</strong> 4/4 MANCO + SteerCo processed end-to-end · ≥ 95% actions in Jira · ≥ 85% owner/due extraction precision · ≥ 70% secretariat effort reduction · executive NPS ≥ +20 · zero material Responsible-AI incidents.</div>
+      </div>
+
+      <div class="slide-tag">90 days</div>
+      <div class="slide-num">9 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 10 · 12-month maturity roadmap
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">12 months</div>
+      <h2 style="margin-top: 8px; margin-bottom: 20px;">Foundation → Governance → Portfolio → Predict.</h2>
+
+      <!-- Timeline -->
+      <div style="display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 8px; align-items: stretch; margin-top: 30px;">
+        <div></div>
+        <div class="phase-bar" style="background: #64748B;">Foundation (0-3m)</div>
+        <div class="phase-bar" style="background: #0B1F3A;">Governance Intelligence (3-6m)</div>
+        <div class="phase-bar" style="background: #F0A202;">Portfolio &amp; Service (6-12m)</div>
+        <div class="phase-bar" style="background: linear-gradient(90deg, #02C39A, #0F766E);">Predict &amp; Optimise (12+m)</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 8px; margin-top: 12px; font-size: 12px;">
+        <div style="font-weight: 700; color: var(--tt-slate); text-align: right; padding-right: 8px;">Agents live</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Meeting Intel · Action Extract · Jira Admin</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">+ Executive Reporting · Correlation (theme)</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">+ Portfolio · Service · Cloud · EA · Audit &amp; Risk</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">All 9 · L3 autonomy on safe paths</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 8px; margin-top: 8px; font-size: 12px;">
+        <div style="font-weight: 700; color: var(--tt-slate); text-align: right; padding-right: 8px;">Cadence</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Weekly draft narrative</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Monthly auto-composed</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Quarterly + Board mobile</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Live executive brief in Teams</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 8px; margin-top: 8px; font-size: 12px;">
+        <div style="font-weight: 700; color: var(--tt-slate); text-align: right; padding-right: 8px;">Value</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">3.5M / yr realised</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">14M / yr realised</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">17M / yr realised</div>
+        <div class="tt-slide-card" style="padding: 8px 10px;">Steady state</div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; color: var(--tt-slate); font-size: 13px;">
+        <em>Autonomy graduates only after evaluation gates pass. Kill switch and manual fallback always available.</em>
+      </div>
+
+      <div class="slide-tag">Roadmap</div>
+      <div class="slide-num">10 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 11 · ROI
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">Business case</div>
+      <h2 style="margin-top: 8px; margin-bottom: 24px;">Base case: <span style="color: var(--tt-teal);">£45M net</span> over 3 years. ~<span style="color: var(--tt-teal);">5× ROI</span>. Payback in <span style="color: var(--tt-teal);">14 months</span>.</h2>
+
+      <div class="grid-4" style="margin-top: 30px;">
+        <div class="tt-slide-card" style="text-align: center;">
+          <div class="big-num big-num-teal">£45M</div>
+          <div style="font-size: 12px; color: var(--tt-slate); margin-top: 4px; font-weight: 600;">3-year net benefit</div>
+          <div style="font-size: 11px; color: var(--tt-slate);">£25M–£66M range</div>
+        </div>
+        <div class="tt-slide-card" style="text-align: center;">
+          <div class="big-num big-num-navy">~5×</div>
+          <div style="font-size: 12px; color: var(--tt-slate); margin-top: 4px; font-weight: 600;">Return on investment</div>
+          <div style="font-size: 11px; color: var(--tt-slate);">3-year</div>
+        </div>
+        <div class="tt-slide-card" style="text-align: center;">
+          <div class="big-num" style="color: var(--tt-gold);">14</div>
+          <div style="font-size: 12px; color: var(--tt-slate); margin-top: 4px; font-weight: 600;">Months to payback</div>
+          <div style="font-size: 11px; color: var(--tt-slate);">Base case</div>
+        </div>
+        <div class="tt-slide-card" style="text-align: center;">
+          <div class="big-num big-num-red">£11M</div>
+          <div style="font-size: 12px; color: var(--tt-slate); margin-top: 4px; font-weight: 600;">Programme cost</div>
+          <div style="font-size: 11px; color: var(--tt-slate);">3-year total</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--tt-slate); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Annual benefits (steady state, base case)</div>
+        <div class="grid-4">
+          <div class="tt-slide-card" style="border-left: 4px solid #64748B;"><div style="font-size: 22px; font-weight: 800; color: #0F172A;">£5.5M</div><div style="font-size: 12px; color: var(--tt-slate);">Labour productivity</div><div style="font-size: 10px; color: var(--tt-slate);">PMO · EA · Service · secretariat</div></div>
+          <div class="tt-slide-card" style="border-left: 4px solid #0B1F3A;"><div style="font-size: 22px; font-weight: 800; color: #0F172A;">£7.0M</div><div style="font-size: 12px; color: var(--tt-slate);">Delivery outcomes</div><div style="font-size: 10px; color: var(--tt-slate);">Schedule · decisions · dedup</div></div>
+          <div class="tt-slide-card" style="border-left: 4px solid #F0A202;"><div style="font-size: 22px; font-weight: 800; color: #0F172A;">£10.7M</div><div style="font-size: 12px; color: var(--tt-slate);">Financial optimisation</div><div style="font-size: 10px; color: var(--tt-slate);">Cloud · vendors · benefits realisation</div></div>
+          <div class="tt-slide-card" style="border-left: 4px solid #DC2626;"><div style="font-size: 22px; font-weight: 800; color: #0F172A;">£5.2M</div><div style="font-size: 12px; color: var(--tt-slate);">Risk &amp; compliance</div><div style="font-size: 10px; color: var(--tt-slate);">Audit · regulatory · incidents</div></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; color: var(--tt-slate); font-size: 12px;">
+        <em>Benefits owned by CFO-tech · measured monthly · independent review at month 12. Claimed only if operational metrics move.</em>
+      </div>
+
+      <div class="slide-tag">ROI</div>
+      <div class="slide-num">11 / 12</div>
+    </section>
+
+    <!-- ================================================================
+         Slide 12 · Ask
+         ================================================================ -->
+    <section>
+      <div class="slide-eyebrow">What we need from you today</div>
+      <h2 style="margin-top: 8px; margin-bottom: 24px;">Four decisions to unlock Phase 1.</h2>
+
+      <div style="max-width: 900px; margin: 0 auto;">
+        <div class="tt-slide-card" style="display: flex; align-items: flex-start; gap: 20px; padding: 20px; margin-bottom: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #F0FDFA; display: flex; align-items: center; justify-content: center; color: var(--tt-teal); font-weight: 800; font-size: 20px; flex-shrink: 0;">1</div>
+          <div>
+            <div style="font-weight: 700; font-size: 18px;">Sponsorship</div>
+            <div style="font-size: 14px; color: #334155; margin-top: 4px;">CIO as executive sponsor · MANCO Chair endorsement · executive mandate that <strong>Jira is the system of record</strong> for governance actions from Day 1.</div>
+          </div>
+        </div>
+        <div class="tt-slide-card" style="display: flex; align-items: flex-start; gap: 20px; padding: 20px; margin-bottom: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #F0FDFA; display: flex; align-items: center; justify-content: center; color: var(--tt-teal); font-weight: 800; font-size: 20px; flex-shrink: 0;">2</div>
+          <div>
+            <div style="font-weight: 700; font-size: 18px;">Phase 1 funding · £4.9M for year 1</div>
+            <div style="font-size: 14px; color: #334155; margin-top: 4px;">Build team (13 FTE) · AWS + Atlassian licensing · legal/DPO capacity · change &amp; adoption · contingency.</div>
+          </div>
+        </div>
+        <div class="tt-slide-card" style="display: flex; align-items: flex-start; gap: 20px; padding: 20px; margin-bottom: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #F0FDFA; display: flex; align-items: center; justify-content: center; color: var(--tt-teal); font-weight: 800; font-size: 20px; flex-shrink: 0;">3</div>
+          <div>
+            <div style="font-weight: 700; font-size: 18px;">Champions network</div>
+            <div style="font-size: 14px; color: #334155; margin-top: 4px;">One named senior champion per forum: SteerCo, MANCO, ARB, Risk, Cyber, Service. They own adoption in their forum.</div>
+          </div>
+        </div>
+        <div class="tt-slide-card" style="display: flex; align-items: flex-start; gap: 20px; padding: 20px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #F0FDFA; display: flex; align-items: center; justify-content: center; color: var(--tt-teal); font-weight: 800; font-size: 20px; flex-shrink: 0;">4</div>
+          <div>
+            <div style="font-weight: 700; font-size: 18px;">Go/no-go review at day 90</div>
+            <div style="font-size: 14px; color: #334155; margin-top: 4px;">MANCO reviews the Phase 1 metrics · decides Phase 2 funding based on realised outcomes, not promises.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tt-slide-card-teal" style="margin-top: 20px; text-align: center;">
+        <p style="font-size: 18px; margin: 0;"><strong>The kill switch is real.</strong> Any autonomy level can be reverted at any time. This is what makes it safe to say yes today.</p>
+      </div>
+
+      <div class="slide-tag">Ask</div>
+      <div class="slide-num">12 / 12</div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1280,
+    height: 800,
+    margin: 0.04,
+    hash: true,
+    controls: true,
+    progress: true,
+    slideNumber: false,
+    transition: 'slide',
+    center: false
+  });
+  if (window.lucide) window.lucide.createIcons();
+</script>
+
+</body>
+</html>

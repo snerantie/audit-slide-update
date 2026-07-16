@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meeting Library · Technology Management Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/tower.css" />
+</head>
+<body>
+  <div id="tt-topbar-mount"></div>
+
+  <main class="max-w-[1400px] mx-auto px-6 py-6" x-data="library()" x-init="init()">
+
+    <!-- Page header -->
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Governance Forum</div>
+        <h1 class="text-2xl font-bold text-slate-900 mt-0.5">Meeting Library</h1>
+        <p class="text-sm text-slate-600 mt-1">5 governance meetings ingested in the last 6 days · <span class="font-semibold text-teal-700">34 actions</span> · <span class="font-semibold text-red-700">11 risks</span> · <span class="font-semibold text-amber-700">16 decisions</span></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-slate-500 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-teal-500"></span> Processed
+          <span class="w-2 h-2 rounded-full bg-amber-500 ml-3"></span> Pending
+          <span class="w-2 h-2 rounded-full bg-slate-300 ml-3"></span> Unprocessed
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center gap-2 mb-5">
+      <template x-for="f in forums" :key="f">
+        <button @click="filter = filter === f ? 'all' : f"
+          :class="filter === f ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+          class="text-xs font-semibold px-3 py-1.5 rounded-full border">
+          <span x-text="f"></span>
+        </button>
+      </template>
+      <button @click="filter='all'" x-show="filter !== 'all'" class="text-xs font-semibold text-teal-700 hover:text-teal-900 ml-2">
+        Clear
+      </button>
+    </div>
+
+    <!-- Meeting cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <template x-for="m in filteredMeetings" :key="m.id">
+        <a :href="'meeting.html?id=' + m.id" class="tt-card tt-card-hover p-5 flex flex-col gap-3 no-underline">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-2">
+              <span :class="'tt-pill ' + forumPillClass(m.forumColor)" x-text="m.forumShort"></span>
+              <span x-show="m.status === 'pending'" class="tt-pill tt-pill-amber flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> PENDING PROCESSING
+              </span>
+              <span x-show="m.status === 'processed'" class="tt-pill tt-pill-teal">PROCESSED</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </div>
+
+          <div>
+            <div class="font-semibold text-slate-900 text-[15px]" x-text="m.forum"></div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              <span x-text="m.dateLabel"></span> · <span x-text="m.time"></span>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-600 flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3 h-3"></i>
+            <span x-text="m.chair"></span>
+          </div>
+
+          <div class="text-xs text-slate-700 italic border-l-2 border-slate-200 pl-2" x-text="m.highlight"></div>
+
+          <div class="flex flex-wrap gap-1 mt-1">
+            <template x-for="t in m.themes" :key="t">
+              <span class="text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded" x-text="t"></span>
+            </template>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-3 mt-1 border-t border-slate-100">
+            <div class="text-center">
+              <div class="text-lg font-bold tt-num-mono text-slate-900" x-text="m.attendees"></div>
+              <div class="text-[10px] uppercase text-slate-500">attend</div>
+            </div>
+            <div class="text-center">
+              <div class="text-lg font-bold tt-num-mono text-teal-700" x-text="m.actionsCount"></div>
+              <div class="text-[10px] uppercase text-slate-500">actions</div>
+            </div>
+            <div class="text-center">
+              <div class="text-lg font-bold tt-num-mono text-red-700" x-text="m.risksCount"></div>
+              <div class="text-[10px] uppercase text-slate-500">risks</div>
+            </div>
+            <div class="text-center">
+              <div class="text-lg font-bold tt-num-mono text-amber-700" x-text="m.decisionsCount"></div>
+              <div class="text-[10px] uppercase text-slate-500">decisions</div>
+            </div>
+          </div>
+        </a>
+      </template>
+    </div>
+
+    <!-- Info footer -->
+    <div class="mt-8 tt-card p-5 flex items-center gap-4">
+      <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+        <i data-lucide="info" class="w-5 h-5 text-teal-700"></i>
+      </div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-slate-900">All meetings are ingested automatically</div>
+        <div class="text-xs text-slate-600 mt-0.5">
+          Teams meetings are pulled via Microsoft Graph (<code class="text-teal-700">callRecords</code> webhook). SharePoint minute documents are picked up by change notification. The Meeting Intelligence Agent produces the first draft within 30 minutes of the meeting ending.
+        </div>
+      </div>
+      <a href="meeting.html?id=cyber-manco-2026-07-08" class="text-xs font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1.5" style="background: var(--tt-navy)">
+        Open pending meeting <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+
+    <footer class="text-center text-xs text-slate-500 py-6">
+      Technology Management Tower · Meeting Library
+    </footer>
+  </main>
+
+  <script src="assets/js/tower.js"></script>
+  <script src="data/meetings/index.js"></script>
+  <script>
+    renderTopNav('meetings');
+
+    function library() {
+      return {
+        meetings: window.MEETINGS_INDEX,
+        forums: ['Cyber MANCO','Architecture MANCO (ARB)','Risk MANCO','Service Management MANCO','SteerCo'],
+        filter: 'all',
+        get filteredMeetings() {
+          if (this.filter === 'all') return this.meetings;
+          return this.meetings.filter(m => m.forum === this.filter);
+        },
+        forumPillClass(color) {
+          return {
+            red: 'tt-pill-red',
+            amber: 'tt-pill-amber',
+            blue: 'tt-pill-blue',
+            teal: 'tt-pill-teal'
+          }[color] || 'tt-pill-grey';
+        },
+        init() {
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
