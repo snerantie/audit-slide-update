@@ -1,0 +1,32 @@
+# Environments
+.env
+.venv
+venv/
+env/
+.direnv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Notebook outputs — commit .ipynb but strip outputs on commit if desired
+# (leave outputs in for now so the demo notebook shows the last successful run)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime output
+tower/output/
+tower/logs/
+*.log

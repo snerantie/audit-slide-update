@@ -1,0 +1,52 @@
+Risk MANCO — Minutes
+
+Date: Friday, 10 July 2026, 09:30-11:00 BST
+Chair: Marcus Bell (CRO Delegate)
+Meeting type: Governance (monthly)
+
+Attendees:
+- Marcus Bell (Chair, CRO Delegate)
+- Sarah Whitmore (CISO)
+- Chloe Bennett (Risk Secretariat)
+- Priya Deshmukh (Head of Third-Party Risk)
+- Angela Rossi (Head of Compliance)
+- Daniel Hughes (Head of Engineering)
+- Elena Rivera (Chief Architect)
+- Tom Nakamura (Head of Service)
+- Rachel Martin (Head of Data)
+- Ahmed Khan (FinOps Lead)
+- Ravi Chandran (CIO, dial-in for items 1-3)
+
+Agenda:
+1. Quarterly risk register review
+2. Third-party concentration - new emerging risk
+3. DORA readiness dashboard
+4. Cloud budget variance
+5. Key-person dependency - Data Engineering
+6. Emerging risk horizon-scan
+
+1 - Quarterly Risk Register Review
+
+Chloe Bennett walked the committee through the top 15 risks and their movement since April. Decision: R-041 (PaymentGate SLA) uplift to Critical, escalated from Cyber MANCO 8 July, ratified by this committee for formal escalation to SteerCo. No other rating changes this cycle.
+
+2 - Third-Party Concentration
+
+Priya Deshmukh proposed a new risk on third-party concentration: merchant payment flows (PaymentGate, GBP 180M/yr), core cloud (single CSP for regulated workloads, approximately GBP 19M/yr), and identity (single IDP vendor). Decision: new risk R-NEW-3 (Third-party concentration - payments, cloud, identity) added to register at Critical. Marcus Bell to commission a risk-treatment plan for the three concentration points by 31 July.
+
+3 - DORA Readiness
+
+Angela Rossi presented the DORA readiness dashboard — overall status 82%, down from 86% following identification of the CIF mapping ownership gap at ARB 9 July. Angela Rossi to update the board on DORA progress at SteerCo on 14 July.
+
+4 - Cloud Budget Variance
+
+Ahmed Khan presented FY26 cloud spend: MTD GBP 2.14M vs plan GBP 2.02M (+6% MTD, +3.4% forecast). Breach probability now 74% for FY26. New risk R-NEW-4 (FY26 cloud budget breach) added at High. Ahmed Khan to escalate cloud variance to SteerCo on 14 July with recommended controls tightening.
+
+5 - Key-Person Dependency — Data Engineering
+
+Rachel Martin noted three senior data engineers approached by competitors; retention conversation required. R-072 (Key-person data eng) remains High. Rachel Martin to hold HR/CIO conversation on retention package by 24 July.
+
+6 - Emerging Risk Horizon-Scan
+
+Chloe Bennett confirmed quarterly emerging-risk horizon-scanning will happen at October MANCO with input from external threat intel. Chloe Bennett to schedule emerging-risk heatmap review for October MANCO by 30 September. Chloe Bennett to schedule the quarterly risk appetite refresh workshop for 31 August.
+
+Meeting closed at 10:56.
