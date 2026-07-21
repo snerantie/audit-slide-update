@@ -136,9 +136,21 @@ class MeetingRecord(BaseModel):
     # Participants
     attendees: List[Attendee] = Field(default_factory=list)
 
-    # Agenda
+    # Agenda — explicit if stated in source, otherwise inferred from topic flow
     agenda: List[str] = Field(
-        default_factory=list, description="Ordered list of agenda items"
+        default_factory=list,
+        description=(
+            "Ordered agenda items — explicit if the source states them, "
+            "otherwise topic segments inferred from the flow of discussion"
+        ),
+    )
+    agenda_inferred: bool = Field(
+        default=False,
+        description=(
+            "True if the agenda was reconstructed from meeting content rather "
+            "than being explicitly stated in the source. Downstream systems "
+            "can flag inferred agendas for human review."
+        ),
     )
 
     # Structured extraction (the point of the agent)

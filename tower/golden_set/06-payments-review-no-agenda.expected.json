@@ -1,0 +1,29 @@
+{
+  "_comment": "Golden set for the no-agenda transcript-style sample. Tests the agent's ability to infer topic segments and extract commitments from informal language.",
+  "forum": "Weekly Payments Review",
+  "date_iso": "2026-07-15",
+  "attendee_count": 6,
+  "regrets_count": 2,
+  "agenda_should_be_inferred": true,
+  "expected_inferred_topics": [
+    "PaymentGate exit clause / Legal engagement",
+    "Data Platform gate 8 dependency",
+    "Customer complaints",
+    "FinOps view / FY26 variance"
+  ],
+  "action_count_min": 5,
+  "action_count_max": 9,
+  "expected_actions_by_owner": {
+    "James Kellner": 2,
+    "Vikram Patel": 3,
+    "Rachel Martin": 0,
+    "Ahmed Khan": 1,
+    "Emma Foster": 1,
+    "Katya Blomberg": 1
+  },
+  "must_extract_due_dates_iso": ["2026-07-17", "2026-07-20", "2026-07-16", "2026-07-24"],
+  "expected_risks": [
+    {"identifier_hint": "Data Platform resource contention / Angela + Josh reallocation", "is_new": true}
+  ],
+  "must_reference_names": ["Angela Ozobia", "Josh Rendel"]
+}
