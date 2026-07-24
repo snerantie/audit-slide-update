@@ -27,10 +27,67 @@ logger = logging.getLogger(__name__)
 # model access in your region.
 DEFAULT_MODEL_ID = "us.meta.llama3-3-70b-instruct-v1:0"
 
-# Pricing (USD per 1M tokens) as of last check. Update if AWS changes.
-# Used only for the estimated_cost_usd figure in RunMetadata — not billing.
+# Backwards-compat: the old Llama pricing constants are still exported so
+# existing imports don't break. New code should use `get_pricing(model_id)`.
 LLAMA_33_70B_PRICE_IN_PER_1M = 0.72
 LLAMA_33_70B_PRICE_OUT_PER_1M = 0.72
+
+# Approximate per-1M-token pricing (USD) for common Bedrock models.
+# For cost-estimate display only — actual billing is on your AWS invoice.
+# Numbers are the AWS-published or provider-published list rates as of the
+# last update. Update by editing this map when providers change prices.
+MODEL_PRICING: dict = {
+    # Meta Llama family
+    "llama3-3-70b":  {"in": 0.72,  "out": 0.72},
+    "llama3-1-70b":  {"in": 0.72,  "out": 0.72},
+    "llama3-1-8b":   {"in": 0.22,  "out": 0.22},
+    "llama3-2-90b":  {"in": 0.72,  "out": 0.72},
+
+    # Anthropic Claude family
+    "claude-3-5-sonnet": {"in": 3.00, "out": 15.00},
+    "claude-3-5-haiku":  {"in": 0.80, "out": 4.00},
+    "claude-3-haiku":    {"in": 0.25, "out": 1.25},
+
+    # Amazon Nova family (cheapest AWS-native)
+    "nova-micro": {"in": 0.035, "out": 0.14},
+    "nova-lite":  {"in": 0.06,  "out": 0.24},
+    "nova-pro":   {"in": 0.80,  "out": 3.20},
+
+    # Zhipu GLM family (approximate — verify against Bedrock console)
+    "glm-4-flash":     {"in": 0.03, "out": 0.10},
+    "glm-4.5-flash":   {"in": 0.03, "out": 0.10},
+    "glm-4.7-flash":   {"in": 0.03, "out": 0.10},
+    "glm-4-plus":      {"in": 0.50, "out": 1.50},
+
+    # DeepSeek family
+    "deepseek-v3": {"in": 0.14, "out": 0.28},
+    "deepseek-r1": {"in": 0.55, "out": 2.19},
+
+    # Alibaba Qwen family
+    "qwen3-32b":  {"in": 0.15, "out": 0.60},
+    "qwen3-72b":  {"in": 0.30, "out": 1.20},
+
+    # Mistral (Bedrock)
+    "mistral-large": {"in": 4.00, "out": 12.00},
+}
+
+
+def get_pricing(model_id: str) -> dict:
+    """Return the pricing dict {in, out} for a model ID (USD per 1M tokens).
+
+    Matches loosely by scanning the model ID for known substrings.
+    Falls back to Llama 3.3 70B pricing if unknown, and prints a warning.
+    """
+    # Strip region-prefix like "us.", "eu.", "ap."
+    core = model_id.split(".", 1)[1] if "." in model_id and model_id.split(".", 1)[0] in {"us", "eu", "ap"} else model_id
+
+    for key, pricing in MODEL_PRICING.items():
+        if key in core.lower().replace(".", "-"):
+            return pricing
+
+    # Fallback with warning
+    print(f"[pricing] Unknown model '{model_id}' — falling back to Llama 3.3 70B pricing for the estimate.")
+    return {"in": LLAMA_33_70B_PRICE_IN_PER_1M, "out": LLAMA_33_70B_PRICE_OUT_PER_1M}
 
 
 def get_bedrock_clients(

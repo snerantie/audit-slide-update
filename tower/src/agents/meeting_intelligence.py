@@ -22,11 +22,7 @@ from typing import Tuple
 
 from pydantic import ValidationError
 
-from ..bedrock_client import (
-    DEFAULT_MODEL_ID,
-    LLAMA_33_70B_PRICE_IN_PER_1M,
-    LLAMA_33_70B_PRICE_OUT_PER_1M,
-)
+from ..bedrock_client import DEFAULT_MODEL_ID, get_pricing
 from ..schemas import MeetingRecord, RunMetadata
 
 logger = logging.getLogger(__name__)
@@ -171,17 +167,14 @@ def extract_meeting(
     total_out = response["usage"]["outputTokens"]
     total_latency = response.get("metrics", {}).get("latencyMs", 0)
 
+    pricing = get_pricing(model_id)
     meta = RunMetadata(
         model_id=model_id,
         input_tokens=total_in,
         output_tokens=total_out,
         latency_ms=total_latency,
         estimated_cost_usd=round(
-            (
-                total_in * LLAMA_33_70B_PRICE_IN_PER_1M
-                + total_out * LLAMA_33_70B_PRICE_OUT_PER_1M
-            )
-            / 1_000_000,
+            (total_in * pricing["in"] + total_out * pricing["out"]) / 1_000_000,
             6,
         ),
         retries=retries,
