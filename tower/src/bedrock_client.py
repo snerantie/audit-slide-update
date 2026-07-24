@@ -53,11 +53,12 @@ MODEL_PRICING: dict = {
     "nova-lite":  {"in": 0.06,  "out": 0.24},
     "nova-pro":   {"in": 0.80,  "out": 3.20},
 
-    # Zhipu GLM family (approximate — verify against Bedrock console)
+    # Zhipu GLM family (approximate — verify against Bedrock console pricing panel)
     "glm-4-flash":     {"in": 0.03, "out": 0.10},
     "glm-4.5-flash":   {"in": 0.03, "out": 0.10},
-    "glm-4.7-flash":   {"in": 0.03, "out": 0.10},
+    "glm-4.7-flash":   {"in": 0.03, "out": 0.10},   # confirmed by user in Bedrock eu-west-1
     "glm-4-plus":      {"in": 0.50, "out": 1.50},
+    "glm-4":           {"in": 0.05, "out": 0.15},
 
     # DeepSeek family
     "deepseek-v3": {"in": 0.14, "out": 0.28},
