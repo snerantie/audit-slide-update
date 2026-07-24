@@ -1,0 +1,63 @@
+SteerCo — Strategic Steering Committee — Minutes
+
+Date: Tuesday, 14 July 2026, 15:00-17:00 BST
+Chair: Ravi Chandran (CIO)
+Meeting type: Governance (monthly)
+Location: Boardroom + Teams (recorded)
+
+Attendees:
+- Ravi Chandran (Chair, CIO)
+- Fiona Delacroix (CFO - Technology)
+- Marcus Bell (CRO Delegate)
+- Olivia Thornton (COO)
+- Vikram Patel (Head of Payments)
+- Rachel Martin (Head of Data)
+- Chris Bergman (Head of Wealth)
+- Elena Rivera (CTO / Chief Architect)
+- Sarah Whitmore (CISO)
+- Tom Nakamura (Head of Service)
+- Ahmed Khan (FinOps Lead)
+- Priya Kapoor (PMO Director)
+
+Quorum met.
+
+Agenda:
+1. Payments Modernisation quarterly review
+2. PaymentGate escalation from Cyber MANCO
+3. DORA programme readiness
+4. Cloud FY26 budget variance
+5. Data Platform Go-Live gates
+6. Wealth Digital Go-Live status
+7. FY27 investment portfolio - early view
+
+1 - Payments Modernisation Quarterly Review
+
+Vikram Patel presented Q3 delivery. Programme has slipped 3 weeks against baseline; GBP 2.1M over budget; and vendor concentration on PaymentGate now recognised as material. RAG moved from Amber to RED. Decision: Payments Modernisation moved to RED; recovery plan mandated within 10 working days. Vikram Patel to submit Payments Modernisation recovery plan by 25 July.
+
+2 - PaymentGate Escalation from Cyber MANCO
+
+Sarah Whitmore presented R-041 uplift, ratified at Risk MANCO 10 July. Fourth SLA breach in six months, two July P1 incidents (Service MANCO 11 July), GBP 180M/yr merchant flow concentration. Decision: R-041 uplift to Critical confirmed; contract exit-clause preparation authorised via Procurement and Legal. Ravi Chandran and Legal to progress formal contract review and prepare exit-clause invocation by 21 July. Marcus Bell to receive third-party concentration risk-treatment plan (from Risk MANCO) by 31 July.
+
+3 - DORA Programme Readiness
+
+Angela Rossi's paper tabled — overall DORA readiness 82%, slipped from 86% after CIF-mapping ownership gap identified at ARB 9 July. Q3 uplift plan (GBP 1.2M funding request) proposed. Decision: DORA Q3 uplift funding of GBP 1.2M approved. Fiona Delacroix to release DORA Q3 uplift funding and confirm to Finance by 21 July.
+
+4 - Cloud FY26 Budget Variance
+
+Ahmed Khan presented FY26 variance of +3.4% forecast and breach probability of 74% (Risk MANCO 10 July). Decision: FY26 cloud variance accepted; FY27 planning to include tighter controls (commit strategy, non-prod scheduling, unit economics reporting). Ahmed Khan to publish FY27 cloud controls proposal for approval at August SteerCo by 31 July.
+
+5 - Data Platform Go-Live Gates
+
+Rachel Martin presented gate 6 (integration) and gate 7 (business acceptance) status. Both proposed for conditional sign-off; final gate 8 (operational readiness) at end-July. Decision: Data Platform gates 6 and 7 conditionally signed off. Rachel Martin to close gate 8 (operational readiness) with final sign-off by 25 July.
+
+6 - Wealth Digital Go-Live
+
+Chris Bergman presented Wealth Digital readiness. Cyber sign-off received conditional on pen-test Medium remediation by 30 July (Cyber MANCO 8 July, decision D-2). Chris Bergman to confirm Wealth Digital Go-Live readiness pending pen-test Medium remediation by 30 July.
+
+7 - FY27 Investment Portfolio - Early View
+
+Priya Kapoor presented the FY27 pipeline. Approximately GBP 280M of proposed investment against a GBP 220M envelope; prioritisation required. Priya Kapoor to co-ordinate heads-of-function draft business cases and portfolio prioritisation by 15 August.
+
+Chloe Bennett to circulate final approved minutes and confirm all action tickets in Jira by 16 July.
+
+Meeting closed at 16:58.

@@ -1,0 +1,61 @@
+Cyber MANCO — Minutes
+
+Date: Wednesday, 8 July 2026, 14:00-15:30 BST
+Chair: Sarah Whitmore (CISO)
+Meeting type: Governance (monthly)
+Location: Teams (recorded, transcript enabled)
+
+Attendees:
+- Sarah Whitmore (Chair, CISO)
+- David Ochoa (Head of Application Security)
+- Priya Deshmukh (Head of Third-Party Risk)
+- James Kellner (Head of Incident Response)
+- Marcus Wilkins (Head of Cloud Security)
+- Anita Rees (Head of Identity & Access)
+- Chloe Bennett (Secretariat)
+
+Regrets: Ravi Chandran (CIO)
+
+Agenda:
+1. PaymentGate P1 incident post-mortem
+2. DORA ICT third-party register progress
+3. Q3 phishing campaign results
+4. Wealth Digital penetration test findings
+5. MFA rollout to legacy applications
+6. AOB
+
+1 - PaymentGate P1 Incident Post-Mortem
+
+James Kellner opened with the post-incident review of the 3 July P1 outage on the PaymentGate merchant gateway. Root cause was a certificate rotation failure on the vendor side; the vendor's on-call did not respond within the contractually agreed 15-minute window and the SLA was breached for the third consecutive month. Total customer impact was 47 minutes and approximately GBP 420k in delayed settlement transactions, plus reputational impact with two Tier-1 merchants who have written formally.
+
+Priya Deshmukh noted that this is now the fourth PaymentGate SLA breach in six months. Contract review was completed in April but no exit clause has been invoked. The vendor's UK entity was recently acquired by a US private-equity firm and their senior engineering team appears to have thinned. Priya to raise the PaymentGate contract exit clause with Procurement and Legal by 22 July.
+
+Sarah Whitmore asked whether this rises to a Critical risk. Consensus reached: yes, given concentration on this vendor for merchant flows worth approximately GBP 180M per year. Decision: uplift Risk R-041 (PaymentGate SLA) from High to Critical and escalate to SteerCo. James Kellner to prepare the post-incident report and cross-link to R-041 by 15 July. Sarah Whitmore to take R-041 uplift and PaymentGate concentration to SteerCo on 14 July.
+
+2 - DORA ICT Third-Party Register
+
+Priya Deshmukh presented DORA readiness on the ICT third-party register. 84 of 92 material providers now classified; 8 remaining are boutique providers under review by Procurement. Register hits the DORA definition of "complete" at 91% today. Target of 100% by 30 September at risk if boutique reviews are not fast-tracked.
+
+David Ochoa flagged that the register does not yet include a mapping of which providers support "critical or important functions" (CIFs) under DORA Article 30. This mapping had been assumed complete by Cyber but is owned by Architecture. Sarah Whitmore to raise CIF mapping ownership with the Chief Architect at ARB tomorrow (9 July). Priya Deshmukh to draft the CIF mapping proposal for Architecture review by 18 July.
+
+3 - Q3 Phishing Campaign Results
+
+Marcus Wilkins presented Q3 phishing campaign results: 4.1% click rate (target < 5%; prior quarter 5.8%). Repeat clickers reduced from 91 to 43. Contact Centre and Finance business units remain above the average and targeted training was approved. Marcus to publish the full Q3 phishing report by 12 July.
+
+Anita Rees noted that 23 users who clicked in Q3 also clicked in Q2. Anita to review whether these users should have enhanced monitoring applied for 90 days, and report back at next Cyber MANCO.
+
+4 - Wealth Digital Penetration Test
+
+David Ochoa summarised findings from the external penetration test on Wealth Digital pre-launch: 3 High findings, 12 Medium, 26 Low. All Highs are remediated. The most notable High was insufficient rate-limiting on the customer-onboarding API, patched on 5 July. Decision: Wealth Digital cyber sign-off issued conditional on Medium remediation by 30 July.
+
+James Kellner asked whether findings had been shared with Internal Audit as part of the pre-Go-Live evidence pack. David to send the findings pack to Internal Audit by 11 July.
+
+5 - MFA to Legacy Applications
+
+Sarah Whitmore raised that MFA rollout to legacy applications remains at 78% coverage (target 95% by year-end). Two systems (LegacyCRM, TreasuryWorks) are hard blockers due to protocol incompatibility. Residual risk on LegacyCRM authentication was noted for the risk register. An options paper is required for ARB. Anita to prepare the MFA legacy options paper for ARB by 25 July.
+
+6 - AOB
+
+No further business. Decision: next Cyber MANCO scheduled for 5 August; PaymentGate to remain standing agenda item until R-041 is downgraded.
+
+Meeting closed at 15:28. Draft minutes prepared by Meeting Intelligence Agent, reviewed by Chloe Bennett, approved for circulation by Sarah Whitmore.

@@ -1,0 +1,45 @@
+Weekly Payments Review — Draft Notes
+
+Date: Wednesday, 15 July 2026, 09:00-10:00 BST
+Chair: Vikram Patel (Head of Payments)
+Location: Teams (recorded, transcript enabled)
+Note-taker: Katya Blomberg (Payments PMO)
+
+Attendees:
+- Vikram Patel (Chair)
+- James Kellner (Head of Incident Response)
+- Emma Foster (Contact Centre)
+- Rachel Martin (Head of Data)
+- Chris Bergman (Head of Wealth) — dial-in first 20 mins only
+- Ahmed Khan (FinOps) — joined 09:35 for finance segment
+
+Apologies: Priya Deshmukh (Third-Party Risk); Sarah Whitmore (CISO)
+
+--- transcript-style notes below, no formal agenda was distributed ---
+
+Vikram opened at 09:03 saying he wanted to crack on given we're all dealing with fallout from last week's incidents. He said he wanted to spend time on the PaymentGate exit-clause work with Legal, then on the SteerCo recovery plan due 25 July, and to touch on Data Platform gate 8 because he's worried about a resource dependency. Emma asked if we could add the customer complaints ticket and Vikram agreed. Ahmed joined later for a FinOps view since we've got budget headwinds.
+
+PaymentGate exit clause and Legal engagement:
+Vikram said Legal are now engaged following Monday's escalation from SteerCo. They want an initial position paper by Wednesday 22 July at the latest. So the team's internal position paper needs to be with Legal by Monday 20 July at the latest, to give a proper review window. James said he'd pull together the technical incident summary from the 3 and 7 July P1s as an input to that paper — he'll have it with Vikram by Friday 17 July. Vikram wants the position paper drafted before he sends it over the weekend; he asked Katya to keep him on that.
+
+Vikram also asked James about the second July incident (the 5xx spike on the 7th). Wanted to know where we are on root cause because he'd be asked at SteerCo. James said vendor confirmed partial capacity degradation. Full RCA is landing Thursday 16 July. James will circulate as soon as it's in.
+
+Katya noted that the exit-clause exercise means the whole PaymentGate contract-review sub-programme needs a Jira update. Vikram said he'd do it himself — noting that he'll refresh the Payments war-room dashboard with the new dates by end of Thursday.
+
+Data Platform gate 8 dependency:
+Vikram said Ravi's recovery plan expects three options for the SteerCo pack on 25 July. Rachel said Data Platform gate 8 operational readiness is on plan for 25 July but she's got a hard constraint: if Payments recovery pulls Angela Ozobia and Josh Rendel from her team, she can't hit the gate. She said she needs a decision by end of this week (Friday 17 July) on whether they're being reallocated. Vikram acknowledged this and committed to giving Rachel a definitive answer on Angela and Josh by end of Friday. Rachel flagged this as a new emerging risk on the register — she wants it captured. Nobody at the meeting could rate it formally; it'll go to Marcus Bell at Risk MANCO. Katya will draft the risk-register entry as a Medium and share with Marcus.
+
+Chris (dial-in) mentioned briefly that Wealth Digital's pen-test Medium remediation is now confirmed for 28 July, ahead of Go-Live on 30 July — so no dependency risk from his side. He then dropped.
+
+Customer complaints:
+Emma reported complaints volume up 8% in July, mostly linked to the outages. Nothing structural. She asked whether Contact Centre could get a targeted communications template approved. Vikram said yes and asked Emma to draft it and share with Comms and Legal by Friday 24 July.
+
+FinOps view:
+Ahmed joined at 09:35 and walked through the FY26 forecast — variance still at 3.4%, breach probability 74%. Payments is the biggest overrunner (£340k). He asked whether Payments Modernisation could commit to £180k of non-prod scheduling savings as part of the recovery plan. Vikram said yes in principle but wanted Ahmed to email him a written option summary by Friday so he could commit formally as part of the SteerCo pack.
+
+Ahmed also mentioned that Priya's third-party concentration treatment plan (due 31 July) is now on the Risk MANCO 7 August agenda — that's not a Payments action.
+
+Wrap-up:
+Vikram closed at 09:58. He asked Katya to circulate notes by end of day. He reminded everyone that PaymentGate is now a standing item in this weekly review until R-041 is downgraded.
+
+--- end of notes ---

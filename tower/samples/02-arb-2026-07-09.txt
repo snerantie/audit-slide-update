@@ -1,0 +1,50 @@
+Architecture Review Board (ARB) — Minutes
+
+Date: Thursday, 9 July 2026, 10:00-12:00 BST
+Chair: Elena Rivera (Chief Architect)
+Meeting type: Governance (bi-weekly)
+
+Attendees:
+- Elena Rivera (Chair, Chief Architect)
+- Kenji Tanaka (Cloud & Platform Architect)
+- Grace Okafor (Data Architect)
+- Robert Alvarez (Payments Architect)
+- Hannah Chen (Security Architect)
+- Daniel Hughes (Head of Engineering)
+- Michael Grant (Enterprise Architect, secretariat)
+- Sarah Whitmore (CISO, guest for item 6)
+- Priya Deshmukh (Third-Party Risk, guest for item 6)
+
+Agenda:
+1. DORA event-logging exception (Payments streaming)
+2. Cloud Landing Zone v2 target-state approval
+3. Oracle on-prem sunset roadmap
+4. Payments event-streaming architecture
+5. MFA legacy options (referral from Cyber MANCO)
+6. DORA CIF mapping ownership
+
+1 - DORA Event-Logging Exception
+
+Elena Rivera presented the exception request for the Payments streaming platform which emits 47k events per second, exceeding the centralised logging aggregation capacity in the DORA event-logging standard. Decision: exception granted with 30 September 2026 expiry, conditional on a target-state design being presented at the September ARB. New risk R-NEW-2 added to the register at Medium (Payments event-streaming vendor lock-in).
+
+2 - Cloud Landing Zone v2
+
+Kenji Tanaka presented the target-state Cloud Landing Zone v2 blueprint. Highlights: multi-account expansion, PrivateLink-first pattern, workload isolation for regulated data. Decision: approved for detailed design. Kenji Tanaka to publish the LZ v2 blueprint to Confluence by 20 July.
+
+3 - Oracle On-Prem Sunset
+
+Grace Okafor presented the phased Oracle on-prem sunset plan. Two applications remain hard-blocked (TreasuryWorks, LegacyCRM) awaiting replacement decisions. Decision: proceed with phase 1 (16 non-critical databases). Grace Okafor to confirm the sequence of decommissioning and publish a full dependency map by 8 August.
+
+4 - Payments Event-Streaming Architecture
+
+Robert Alvarez presented the options paper for Payments streaming architecture. Three options tabled: (A) migrate to managed Kafka on cloud, (B) event-mesh SaaS, (C) hybrid. Board wanted more depth on option (C). Robert Alvarez to prepare the exception paper and target-state design for review at 30 July ARB.
+
+5 - MFA Legacy Options (referred from Cyber MANCO)
+
+Sarah Whitmore (guest) noted the pending MFA-to-legacy options paper from Cyber MANCO 8 July. ARB to receive Anita Rees's options paper by 25 July for review at 30 July session.
+
+6 - DORA CIF Mapping Ownership
+
+Sarah Whitmore raised the DORA Article 30 CIF (Critical or Important Functions) mapping — surfaced at Cyber MANCO the previous day as an ownership gap. Priya Deshmukh confirmed she will draft the mapping proposal. Decision: Architecture accepts ownership of the CIF mapping, subject to Priya's draft. Elena Rivera to formally close the loop on CIF-mapping ownership with Chief Architect sign-off by 25 July.
+
+Meeting closed at 11:52.

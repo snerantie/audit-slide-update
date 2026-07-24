@@ -1,0 +1,35 @@
+{
+  "_comment": "Hand-labelled expected output for eval. Numbers matter more than exact wording — check counts and owners, not exact phrasing.",
+  "forum": "Cyber MANCO",
+  "date_iso": "2026-07-08",
+  "attendee_count": 7,
+  "regrets_count": 1,
+  "agenda_item_count": 6,
+  "decision_count": 3,
+  "risk_count": 2,
+  "action_count": 9,
+  "expected_decisions": [
+    "Uplift R-041 to Critical, escalate to SteerCo",
+    "Wealth Digital cyber sign-off conditional on remediation by 30 July",
+    "PaymentGate remains standing agenda item until R-041 downgraded"
+  ],
+  "expected_risks": [
+    {"identifier": "R-041", "is_uplifted": true, "from_rating": "High", "rating": "Critical"},
+    {"identifier": "LegacyCRM auth / MFA legacy", "is_new": true, "rating": "Medium"}
+  ],
+  "expected_actions_by_owner": {
+    "Priya Deshmukh": 2,
+    "James Kellner": 1,
+    "Sarah Whitmore": 2,
+    "Marcus Wilkins": 1,
+    "Anita Rees": 2,
+    "David Ochoa": 1
+  },
+  "expected_priority_distribution": {
+    "Critical": 1,
+    "High": 3,
+    "Medium": 3,
+    "Low": 2
+  },
+  "must_reference_dates": ["2026-07-22", "2026-07-15", "2026-07-14", "2026-07-09", "2026-07-18", "2026-07-12", "2026-07-11", "2026-07-25"]
+}

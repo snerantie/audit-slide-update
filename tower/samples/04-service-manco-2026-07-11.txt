@@ -1,0 +1,44 @@
+Service Management MANCO — Minutes
+
+Date: Saturday, 11 July 2026, 11:00-12:00 BST
+Chair: Tom Nakamura (Head of Service)
+Meeting type: Operational (weekly)
+
+Attendees:
+- Tom Nakamura (Chair, Head of Service)
+- Vikram Patel (Payments Service Owner)
+- Emma Foster (Contact Centre Service Owner)
+- Rachel Martin (Data Service Owner)
+- Chris Bergman (Wealth Service Owner)
+- Adam Wells (Head of Operations)
+- Linda Park (CAB Chair)
+- Julian Cross (Head of Merchant Services)
+
+Agenda:
+1. July P1 review
+2. SIP progress
+3. CAB pipeline for week of 14 July
+4. Customer sentiment and complaints
+5. Merchant availability SLA breach
+
+1 - July P1 Review
+
+Two P1 incidents in the last ten days. 3 July: PaymentGate certificate rotation failure — 47 min customer impact, GBP 420k delayed settlements. 7 July: PaymentGate API gateway 5xx spike — 22 min impact. Both root cause: vendor-side reliability. Decision: publish combined July P1 report identifying PaymentGate as the common root cause; feed into SteerCo escalation. Tom Nakamura to publish combined July P1 report by 18 July.
+
+2 - SIP Progress
+
+Emma Foster: Contact Centre reliability SIP - 12% improvement MoM, on target. Emma Foster to provide next SIP update at MANCO on 15 August. Vikram Patel: Payments SIP - on target, but proposed acceleration in light of PaymentGate exposure. Decision: accelerate Payments SIP timeline; revised plan required. Vikram Patel to propose accelerated Payments SIP plan by 22 July.
+
+3 - CAB Pipeline
+
+Linda Park: 12 changes proposed for week of 14 July; two flagged high-risk — identity provider migration and TreasuryWorks database cutover. Linda Park to review high-risk changes with owners and provide risk assessment by 13 July.
+
+4 - Customer Sentiment and Complaints
+
+Adam Wells: NPS static; complaint volume up 8% linked to July outages. No action required at this time.
+
+5 - Merchant Availability SLA Breach
+
+Julian Cross: Merchant availability July MTD 99.87% vs 99.95% target — first SLA breach in 14 months. New risk R-NEW-7 (Merchant availability SLA) added at Medium. Julian Cross to conduct post-mortem and issue formal report to affected merchants by 20 July.
+
+Meeting closed at 11:56.
